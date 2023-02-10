@@ -33,6 +33,12 @@ std::vector<std::string> read_wordle_js(std::istream &&is)
     return words;
 }
 
+bool contains_chars(const std::string &str, const std::vector<char> &vc)
+{
+    return all_of(vc.begin(), vc.end(), [&](const char &c)
+                  { return (str.find(c) != std::string::npos); });
+}
+
 // Pattern is based on word of length 5, but has + prepended if char is yellow, - prepended if char is gray, and just the char if green
 // yellow = char is present, but in wrong place
 // gray = char is absent, should ignore going forward
@@ -47,7 +53,6 @@ std::vector<std::string> filter(std::vector<std::string> &&words, std::vector<ch
     std::vector<char> shouldContain{};
 
     // Filter here
-    std::string targetStrRxp{};
     for (std::sregex_iterator i = p_begin; i != p_end; ++i)
     {
         std::smatch match = *i;
@@ -64,7 +69,17 @@ std::vector<std::string> filter(std::vector<std::string> &&words, std::vector<ch
             {
                 shouldContain.push_back(match_str.at(1));
             }
+        }
+    }
 
+    std::string targetStrRxp{};
+    for (std::sregex_iterator i = p_begin; i != p_end; ++i)
+    {
+        std::smatch match = *i;
+        std::string match_str = match.str();
+
+        if (match_str.size() == 2)
+        {
             targetStrRxp.append("[^");
             for (char ignored : ignoreChars)
                 targetStrRxp.append(std::string{ignored});
@@ -81,14 +96,21 @@ std::vector<std::string> filter(std::vector<std::string> &&words, std::vector<ch
                                { const bool remove = !std::regex_search(word, std::regex(targetStrRxp)); /* std::cout << "Should remove " << word << ": " << remove << std::endl; */ return remove; }),
                 words.end());
 
-    std::cout << "Candidates: ";
-    for (auto word : words)
-        std::cout << word << ", ";
+    ignoreChars.erase(std::remove_if(ignoreChars.begin(), ignoreChars.end(), [&](const char &c)
+                                     { return std::find(shouldContain.begin(), shouldContain.end(), c) != shouldContain.end(); }),
+                      ignoreChars.end());
 
-    std::cout << std::endl;
+    // std::cout << "Candidates: ";
+    // for (auto word : words)
+    //     std::cout << word << ", ";
 
-    // Should sort by strings containing chars from shouldContain.
-    // But this works pretty well already.
+    // std::cout << std::endl;
+
+    std::sort(words.begin(), words.end(), [&](const std::string &a, const std::string &b)
+              {
+        const bool ac = contains_chars(a, shouldContain);
+        const bool bc = contains_chars(b, shouldContain);
+        return ac > bc; });
 
     return words;
 }
