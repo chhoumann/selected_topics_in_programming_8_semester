@@ -6,3 +6,7 @@
 .idea/
 .vscode/
 cmake-build-debug/
+build/
+*.cmake
+CMakeCache.txt
+CMakeFiles/
