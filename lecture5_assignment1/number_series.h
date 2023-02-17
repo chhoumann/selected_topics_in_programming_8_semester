@@ -14,12 +14,6 @@ namespace series
 
         int get_max() const;
 
-        number_series();
-
-        explicit number_series(const std::vector<int> &&ns);
-
-        ~number_series();
-
         static number_series make_random(int upper, int lower, size_t length);
 
         number_series operator+(const number_series &other);
@@ -29,7 +23,8 @@ namespace series
         bool operator<(const number_series &other) const;
 
     private:
-        std::vector<int> series{};
+        int averages[12]; // number_series sort just got slower
+        std::vector<int> series;
 
         void update_min_max();
 

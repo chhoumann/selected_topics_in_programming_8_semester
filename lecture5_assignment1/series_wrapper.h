@@ -1,8 +1,8 @@
 #ifndef SERIESWRAPPER_H
 #define SERIESWRAPPER_H
 
-#include <memory>
 #include "number_series.h"
+#include <memory>
 
 namespace series
 {
@@ -11,7 +11,7 @@ namespace series
     public:
         series_wrapper() : _series(std::make_unique<number_series>()){};
         series_wrapper(const series_wrapper &other) : _series(std::make_unique<number_series>(*other._series)){};
-        series_wrapper(const series_wrapper &&other) : _series(std::make_unique<number_series>(std::move(other._series))){};
+        series_wrapper(const series_wrapper &&other) : _series(std::make_unique<number_series>(std::move(*other._series))){};
 
         series_wrapper &operator=(const series_wrapper &other);
         series_wrapper &operator=(series_wrapper &&other);
