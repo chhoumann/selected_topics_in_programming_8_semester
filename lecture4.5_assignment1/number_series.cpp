@@ -8,30 +8,21 @@
 
 namespace series
 {
-    number_series::~number_series()
-    {
-        series.clear();
-    }
-
-    number_series::number_series() = default;
-
-    number_series::number_series(const std::vector<int> &&ns) : series{std::move(ns)}
-    {
-        update_min_max();
-    }
-
     number_series number_series::make_random(int lower, int upper, size_t length)
     {
-        std::vector<int> series(length);
+        number_series ns{};
+        ns.series.reserve(length);
 
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> dist(lower, upper);
 
-        std::generate(series.begin(), series.end(), [&gen, &dist]()
+        std::generate(ns.series.begin(), ns.series.end(), [&gen, &dist]()
                       { return dist(gen); });
 
-        return number_series{std::move(series)};
+        ns.update_min_max();
+
+        return ns;
     }
 
     int number_series::get_min() const
@@ -49,14 +40,18 @@ namespace series
         if (series.size() != other.series.size())
             throw std::invalid_argument("Vectors must have the same size");
 
-        std::vector<int> res(series.size());
+        number_series ns{};
+        ns.series.reserve(series.size());
 
         for (size_t i = 0; i < series.size(); ++i)
         {
-            res[i] = series[i] + other.series[i];
+            ns.series.push_back(series[i] + other.series[i]);
         }
 
-        return number_series{std::move(res)};
+        ns._minimum = _minimum + other._minimum;
+        ns._maximum = _maximum + other._maximum;
+
+        return ns;
     }
 
     number_series &number_series::operator+=(const number_series &other)
@@ -79,9 +74,16 @@ namespace series
 
     void number_series::update_min_max()
     {
-        auto res = std::minmax_element(series.begin(), series.end());
+        _minimum = 0;
+        _maximum = 0;
 
-        _minimum = *res.first;
-        _maximum = *res.second;
+        for (const auto &x : series)
+        {
+            if (x < _minimum)
+                _minimum = x;
+
+            if (x < _maximum)
+                _maximum = x;
+        }
     }
 }

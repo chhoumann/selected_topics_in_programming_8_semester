@@ -20,7 +20,7 @@ namespace series
 
     series_wrapper series_wrapper::make_random(int lower, int upper, size_t length)
     {
-        series_wrapper sw{};
+        series_wrapper sw;
         sw._series->make_random(upper, lower, length);
 
         return sw;
