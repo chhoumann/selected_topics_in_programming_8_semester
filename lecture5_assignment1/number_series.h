@@ -1,33 +1,40 @@
+#ifndef NUMBERSERIES_H
+#define NUMBERSERIES_H
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
-class NumberSeries {
+namespace series
+{
+    class number_series
+    {
+    public:
+        int _minimum{};
+        int _maximum{};
 
-public:
-    int minimum{};
-    int maximum{};
+        int get_min() const;
 
-    explicit NumberSeries(const std::vector<int>&& ns) {
-        std::cout << "Custom constructor" << std::endl;
+        int get_max() const;
 
-        series = std::move(ns);
-        auto res = std::minmax_element(series.begin(), series.end());
+        number_series(const int x);
+        explicit number_series(const std::vector<int> &&ns);
 
-        minimum = *res.first;
-        maximum = *res.second;
-    }
+        ~number_series();
 
-    ~NumberSeries() {
-        series.clear();
-    }
+        static number_series MakeRandom(int upper, int lower, size_t length);
 
-    static NumberSeries MakeRandom(int upper, int lower, int length);
+        number_series operator+(const number_series &other);
 
-    inline NumberSeries operator+(const NumberSeries& rhs);
-    inline NumberSeries operator+=(const NumberSeries &rhs);
-    inline bool operator<(const NumberSeries &rhs);
+        number_series &operator+=(const number_series &other);
 
-private:
-    std::vector<int> series{};
-};
+        bool operator<(const number_series &other) const;
+
+    private:
+        std::vector<int> series{};
+
+        void update_min_max();
+        };
+}
+
+#endif
