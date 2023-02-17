@@ -4,6 +4,7 @@
 #include <random>
 #include <algorithm>
 #include <functional>
+#include <immintrin.h>
 
 namespace series
 {
@@ -12,16 +13,14 @@ namespace series
         series.clear();
     }
 
+    number_series::number_series() = default;
+
     number_series::number_series(const std::vector<int> &&ns) : series{std::move(ns)}
     {
-        std::cout << "Custom constructor" << std::endl;
-
         update_min_max();
     }
 
-    number_series::number_series(const int x) : series(x){};
-
-    number_series number_series::MakeRandom(int lower, int upper, size_t length)
+    number_series number_series::make_random(int lower, int upper, size_t length)
     {
         std::vector<int> series(length);
 

@@ -10,19 +10,17 @@ namespace series
     class number_series
     {
     public:
-        int _minimum{};
-        int _maximum{};
-
         int get_min() const;
 
         int get_max() const;
 
-        number_series(const int x);
+        number_series();
+
         explicit number_series(const std::vector<int> &&ns);
 
         ~number_series();
 
-        static number_series MakeRandom(int upper, int lower, size_t length);
+        static number_series make_random(int upper, int lower, size_t length);
 
         number_series operator+(const number_series &other);
 
@@ -34,7 +32,10 @@ namespace series
         std::vector<int> series{};
 
         void update_min_max();
-        };
+
+        int _minimum{};
+        int _maximum{};
+    };
 }
 
 #endif
