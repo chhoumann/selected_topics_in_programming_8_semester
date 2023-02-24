@@ -13,6 +13,7 @@ namespace series
         number_series ns{};
         ns.series.reserve(length);
 
+        // Static rd, gen, dist would be more efficient across function calls
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> dist(lower, upper);
@@ -40,6 +41,7 @@ namespace series
         if (series.size() != other.series.size())
             throw std::invalid_argument("Vectors must have the same size");
 
+        // Should have reused += operator here
         number_series ns{};
         ns.series.reserve(series.size());
 
@@ -79,6 +81,7 @@ namespace series
 
         for (const auto &x : series)
         {
+            // Could have used: _minimum = std::minimum(_minimum, x); instead of branching.
             if (x < _minimum)
                 _minimum = x;
 

@@ -10,6 +10,7 @@ namespace series
         return *this;
     }
 
+    // Could have been = default;
     series_wrapper &series_wrapper::operator=(series_wrapper &&other)
     {
         if (this != &other)
@@ -26,6 +27,7 @@ namespace series
         return sw;
     }
 
+    // Trivial methods are easier to maintain inline within a class.
     int series_wrapper::get_min() const
     {
         return _series->get_min();
@@ -36,6 +38,10 @@ namespace series
         return _series->get_max();
     }
 
+    // Could have reused += operator:
+    // auto *res = this;
+    // res += other;
+    // return res;
     series_wrapper series_wrapper::operator+(const series_wrapper &other)
     {
         series_wrapper sw{};

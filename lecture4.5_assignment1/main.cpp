@@ -33,6 +33,7 @@ void run()
         nss[i] += number_series::make_random(1, 10, 100);
 
     auto t_start = std::chrono::high_resolution_clock::now();
+    // Might not be necessary to use the third argument (lambda) here, as sort should use < operator by default.
     std::sort(nss.begin(), nss.end(), [](const number_series &x, const number_series &y)
               { return x < y; });
 
@@ -50,12 +51,14 @@ void run_wrapper()
         nss.push_back(series_wrapper::make_random(1, 10, 100));
     }
 
+    // Prefer ranged loops
     for (size_t i = 0; i < size; ++i)
     {
         auto random = series_wrapper::make_random(1, 10, 100);
-        nss.at(i) += random;
+        nss.at(i) += random; // Wouldn't need to do this .at thing if I used ranged loop. + overhead here of checking index range.
     }
     auto t_start = std::chrono::high_resolution_clock::now();
+    // See 'run' fn on sort
     std::sort(nss.begin(), nss.end(), [](const series_wrapper &x, const series_wrapper &y)
               { return x < y; });
 
@@ -64,3 +67,5 @@ void run_wrapper()
 
     std::cout << "Time to sort wrapper: \t" << duration << "ms." << std::endl;
 }
+
+// Overall OK. Should have included performance metrics in hand-in. Also before and after padding (?). What were my conclusions?
