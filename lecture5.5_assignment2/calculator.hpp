@@ -13,7 +13,7 @@ namespace calculator
     using state_t = std::vector<double>;
 
     /** Forward declarations to get around circular dependencies: */
-    struct expr_t;
+    class expr_t;
 
     enum op_t
     {
@@ -24,23 +24,33 @@ namespace calculator
         assign
     };
 
-    struct term_t
+    class term_t
     {
+    public:
         term_t() = default;
         virtual ~term_t() noexcept = default;
         virtual double operator()(state_t &s) const = 0;
     };
 
+    struct const_t : public term_t
+    {
+        double value;
+
+    public:
+        explicit const_t(double value) : value{value} {}
+        double operator()(state_t &) const override { return value; }
+    };
+
     /** Class representing a variable */
-    struct var_t : public term_t
+    class var_t : public term_t
     {
         size_t id;
+
         /** only friends are allowed to construct variable instances */
         explicit var_t(size_t id) : id{id} {}
 
     public:
-        var_t(const var_t &) = default;
-        var_t &operator=(const var_t &) = default;
+        [[nodiscard]] size_t get_id() const { return id; }
 
         /** returns the value of the variable stored in a state */
         double operator()(state_t &s) const override { return s[id]; }
@@ -53,6 +63,103 @@ namespace calculator
         operator expr_t() const;
 
         var_t(expr_t expr);
+    };
+
+    class assign_t : public term_t
+    {
+        std::shared_ptr<var_t> var;
+        std::shared_ptr<term_t> term;
+        op_t op;
+
+    public:
+        assign_t(std::shared_ptr<var_t> var, std::shared_ptr<term_t> term, op_t op)
+            : var{std::move(var)}, term{std::move(term)}, op{op} {}
+
+        double operator()(state_t &s) const override
+        {
+            double value = (*term)(s);
+            double *var_value = &s[var->get_id()];
+
+            switch (op)
+            {
+            case assign:
+                *var_value = value;
+                break;
+            case plus:
+                *var_value += value;
+                break;
+            case minus:
+                *var_value -= value;
+                break;
+            case multiply:
+                *var_value *= value;
+                break;
+            case divide:
+                if (value == 0)
+                    throw std::runtime_error("division by zero");
+
+                *var_value /= value;
+                break;
+            default:
+                throw std::runtime_error("invalid assignment operator");
+            }
+
+            return *var_value;
+        }
+    };
+
+    class unary_t : public term_t
+    {
+        std::shared_ptr<term_t> term;
+        op_t op;
+
+    public:
+        unary_t(std::shared_ptr<term_t> term, op_t op)
+            : term{std::move(term)}, op{op} {}
+
+        double operator()(state_t &s) const override
+        {
+            switch (op)
+            {
+            case plus:
+                return +(*term)(s);
+            case minus:
+                return -(*term)(s);
+            default:
+                throw std::runtime_error("invalid unary operator");
+            }
+        }
+    };
+
+    class binary_t : public term_t
+    {
+        std::shared_ptr<term_t> left;
+        std::shared_ptr<term_t> right;
+        op_t op;
+
+    public:
+        binary_t(std::shared_ptr<term_t> left, std::shared_ptr<term_t> right, op_t op)
+            : left{std::move(left)}, right{std::move(right)}, op{op} {}
+
+        double operator()(state_t &s) const override
+        {
+            switch (op)
+            {
+            case plus:
+                return (*left)(s) + (*right)(s);
+            case minus:
+                return (*left)(s) - (*right)(s);
+            case multiply:
+                return (*left)(s) * (*right)(s);
+            case divide:
+                if ((*right)(s) == 0)
+                    throw std::runtime_error("division by zero");
+
+                return (*left)(s) / (*right)(s);
+            default:
+                throw std::runtime_error("invalid binary operator");
+            }
+        }
     };
 
     class symbol_table_t
@@ -74,99 +181,10 @@ namespace calculator
         [[nodiscard]] state_t state() const { return {initial}; }
     };
 
-    struct const_t : public term_t
-    {
-        double value;
-        double operator()(state_t &) const override { return value; }
-    };
-
-    struct assign_t : public term_t
-    {
-        std::shared_ptr<var_t> var;
-        std::shared_ptr<term_t> term;
-        op_t op;
-
-        assign_t(std::shared_ptr<var_t> var, std::shared_ptr<term_t> term, op_t op)
-            : var{std::move(var)}, term{std::move(term)}, op{op} {}
-
-        double operator()(state_t &s) const override {
-            double value = (*term)(s);
-            double *var_value = &s[var->id];
-
-            switch (op) {
-                case assign:
-                    *var_value = value;
-                    break;
-                case plus:
-                    *var_value += value;
-                    break;
-                case minus:
-                    *var_value -= value;
-                    break;
-                case multiply:
-                    *var_value *= value;
-                    break;
-                case divide:
-                    *var_value /= value;
-                    break;
-                default:
-                    throw std::runtime_error("invalid assignment operator");
-            }
-
-            return *var_value;
-        }
-    };
-
-    struct unary_t : public term_t
-    {
-        std::shared_ptr<term_t> term;
-        op_t op;
-
-        unary_t(std::shared_ptr<term_t> term, op_t op)
-            : term{std::move(term)}, op{op} {}
-
-        double operator()(state_t &s) const override {
-            switch (op) {
-                case plus:
-                    return +(*term)(s);
-                case minus:
-                    return -(*term)(s);
-                default:
-                    throw std::runtime_error("invalid unary operator");
-            }
-        }
-    };
-
-    struct binary_t : public term_t
-    {
-        std::shared_ptr<term_t> left;
-        std::shared_ptr<term_t> right;
-        op_t op;
-
-        binary_t(std::shared_ptr<term_t> left, std::shared_ptr<term_t> right, op_t op)
-            : left{std::move(left)}, right{std::move(right)}, op{op} {}
-
-        double operator()(state_t &s) const override {
-            switch (op) {
-                case plus:
-                    return (*left)(s) + (*right)(s);
-                case minus:
-                    return (*left)(s) - (*right)(s);
-                case multiply:
-                    return (*left)(s) * (*right)(s);
-                case divide:
-                    return (*left)(s) / (*right)(s);
-                default:
-                    throw std::runtime_error("invalid binary operator");
-            }
-        }
-    };
-
     struct expr_t
     {
         std::shared_ptr<term_t> term;
 
-        // Var constructor
         explicit expr_t(const var_t &var) : term{std::make_shared<var_t>(var)} {}
 
         // Binary constructor
@@ -182,14 +200,16 @@ namespace calculator
 
         // Assignment constructor
         expr_t(const var_t &var, const expr_t &e, op_t op)
-            : term{std::make_shared<assign_t>(var, e.term, op)} {}
+            : term{std::make_shared<assign_t>(std::make_shared<var_t>(var), e.term, op)} {}
 
         double operator()(state_t &s) const { return (*term)(s); }
     };
 
+    // Converstion operator from var_t to expr_t
     var_t::operator expr_t() const { return expr_t{*this}; }
 
-    var_t::var_t(expr_t expr) {
+    var_t::var_t(expr_t expr)
+    {
         throw std::logic_error("assignment destination must be a variable expression");
     }
 
