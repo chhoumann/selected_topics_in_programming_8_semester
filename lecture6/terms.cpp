@@ -243,6 +243,105 @@ namespace calculator
             }
         };
     };
+
+    struct Printer : Visitor
+    {
+        state_t state;
+
+        Printer(const state_t &s) : state{s} {}
+
+        void visit(const class term_t &term) override
+        {
+            term.accept(*this);
+        }
+
+        void visit(const class var_t &var) override
+        {
+            std::cout << state[var.get_id()];
+        };
+
+        void visit(const class const_t &c) override
+        {
+            std::cout << c.get_value();
+        };
+
+        void visit(const class unary_t &u) override
+        {
+            std::cout << "(";
+            switch (u.get_op())
+            {
+            case op_t::plus:
+                std::cout << "+";
+                break;
+            case op_t::minus:
+                std::cout << "-";
+                break;
+            default:
+                throw std::logic_error{"unsupported unary operator"};
+            }
+            u.get_term().accept(*this);
+            std::cout << ")";
+        };
+
+        void visit(const class binary_t &b) override
+        {
+            std::cout << "(";
+            b.get_term1().accept(*this);
+            switch (b.get_op())
+            {
+            case op_t::plus:
+                std::cout << "+";
+                break;
+            case op_t::minus:
+                std::cout << "-";
+                break;
+            case op_t::mul:
+                std::cout << "*";
+                break;
+            case op_t::div:
+                std::cout << "/";
+                break;
+            default:
+                throw std::logic_error{"unsupported binary operator"};
+            }
+            b.get_term2().accept(*this);
+            std::cout << ")";
+        };
+
+        void visit(const class assign_t &a) override
+        {
+            std::cout << "(";
+            a.get_var().accept(*this);
+            switch (a.get_op())
+            {
+            case op_t::assign:
+                std::cout << "=";
+                break;
+            case op_t::plus:
+                std::cout << "+=";
+                break;
+            case op_t::minus:
+                std::cout << "-=";
+                break;
+            case op_t::mul:
+                std::cout << "*=";
+                break;
+            case op_t::div:
+                std::cout << "/=";
+                break;
+            default:
+                throw std::logic_error{"unsupported assignment operator"};
+            }
+            a.get_term().accept(*this);
+            std::cout << ")";
+        };
+
+        void operator<<(const term_t &term)
+        {
+            term.accept(*this);
+            std::cout << std::endl;
+        }
+    };
 }
 
 int main()
@@ -254,9 +353,10 @@ int main()
     auto state = sys.state();
 
     std::shared_ptr<calculator::term_t> t = std::make_shared<calculator::binary_t>(a, b, calculator::op_t::plus);
-    calculator::Evaluator e(state);
-    t->accept(e);
-    std::cout << e.result << std::endl;
+    // calculator::Evaluator e(state);
+    calculator::Printer p(state);
+    p << *t;
+    // std::cout << e.result << std::endl;
     return 0;
 }
 
