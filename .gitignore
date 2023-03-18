@@ -10,3 +10,4 @@ build/
 *.cmake
 CMakeCache.txt
 CMakeFiles/
+lecture7/templates/git_backup
