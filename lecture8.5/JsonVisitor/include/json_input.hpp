@@ -85,7 +85,9 @@ struct json_reader_t
     void visit(const std::string& name, Data& value)
     {
         /** TODO: use static visitor pattern to read class fields from input stream */
+        j.is.get(); // skip '{'
         value.accept(*this);
+        j.is.get(); // skip '}'
     }
 
     template <Boolean T>
@@ -130,9 +132,7 @@ json_istream& operator>>(json_istream& j, T& value)
 template <typename T>
 json_istream& operator>>(json_istream&& j, T& value)
 {
-    json_reader_t reader{j};
-    reader.visit("", value);
-    return j;
+    return j >> value;
 }
 
 #endif  // STATIC_VISITOR_JSON_INPUT_HPP
