@@ -134,9 +134,7 @@ json_ostream& operator<<(json_ostream& j, const T& value)
 template <typename T>
 json_ostream& operator<<(json_ostream&& j, const T& value)
 {
-    json_writer_t writer{j};
-    writer.visit("", value);
-    return j;
+    return j << value;
 }
 
 #endif  // STATIC_VISITOR_JSON_OUTPUT_HPP
