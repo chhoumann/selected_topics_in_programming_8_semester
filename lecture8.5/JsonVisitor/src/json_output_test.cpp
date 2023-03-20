@@ -74,8 +74,8 @@ TEST_CASE("JSON output")
     static_assert(accepts_v<const aggregate_t&, json_writer_t>, "const aggregate should accept writer");
     static_assert(accepts_v<const nested_t&, json_writer_t>, "const nested should accept writer");
     // TODO: uncomment the following extra tests for meta library and fix accepts_v implementation
-    // static_assert(!accepts_v<json_writer_t, aggregate_t>, "writer should not accept aggregate");
-    // static_assert(!accepts_v<int, double>, "int should not accept double");
+    static_assert(!accepts_v<json_writer_t, aggregate_t>, "writer should not accept aggregate");
+    static_assert(!accepts_v<int, double>, "int should not accept double");
     SUBCASE("aggregate")
     {
         auto v = aggregate_t{true, 3, 3.14, "hello", {7, 11}};

@@ -63,7 +63,7 @@ TEST_CASE("JSON input")
     static_assert(accepts_v<aggregate_t&, json_reader_t>, "aggregate should accept reader");
     static_assert(accepts_v<nested_t&, json_reader_t>, "nested should accept reader");
     // TODO: uncomment the following extra tests for meta library and fix accepts_v implementation
-    // static_assert(!accepts_v<int, double>, "int should not accept double");
+    static_assert(!accepts_v<int, double>, "int should not accept double");
     SUBCASE("aggregate")
     {
         auto is = std::istringstream{R"({"b":true,"x":3,"y":3.14,"z":"hello","w":[7,11]})"};
