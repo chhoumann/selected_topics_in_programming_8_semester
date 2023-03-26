@@ -53,6 +53,7 @@ concept container = requires(T t) {
 };
 template <typename T>
 // FIXME: use concepts, require std::begin, std::end, and not is_string_v
+// Should remove is_array, as it's already detected by the container concept (std::begin...)
 constexpr auto is_container_v = (container<T> || std::is_array_v<std::remove_cvref_t<T>>)&&!is_string_v<T>;
 
 template <typename T>

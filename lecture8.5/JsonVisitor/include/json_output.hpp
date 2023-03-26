@@ -32,10 +32,10 @@ struct json_ostream
         static const std::unordered_set<std::string> ignore_chars = {":", ",",    "[",     "]",   "{",
                                                                      "}", "true", "false", "null"};
 
-        if (ignore_chars.find(value) != ignore_chars.end())
+        if (ignore_chars.find(value) != ignore_chars.end()) // Inneficient (buffering) and convoluted design (what if the data contains one of those words?)
             os << value;
         else
-            os << '"' << value << '"';
+            os << '"' << value << '"'; // OK, but consider `os << std::quoted(value);`, the I/O manipulators are very powerfull (std::quoted will escape the quotes in value).
         return *this;
     }
 
@@ -43,8 +43,8 @@ struct json_ostream
     json_ostream& operator<<(const T& value)
     {
         os << '[';
-        for (auto it = value.begin(); it != value.end(); ++it) {
-            if (it != value.begin())
+        for (auto it = value.begin(); it != value.end(); ++it) { // Use non-member `std::begin` and `std::end` which are more generic and works on C arrays.
+            if (it != value.begin()) // OK, but it would be better to move the `if` outside the loop.
                 os << ',';
             *this << *it;
         }
@@ -61,6 +61,7 @@ struct json_writer_t
 
     json_writer_t(json_ostream& j): j{j} {}
 
+    // Creates an independent copy, inneficient! Either print the quoted key (better), or return `const std::string&`
     std::string write_key(const std::string& key)
     {
         if (!isFirstPairInObject)
@@ -71,14 +72,14 @@ struct json_writer_t
         return key;
     }
 
-    template <typename Data>
+    template <typename Data> // requires accepts_v<const Data&, json_writer_t>
     void visit(const std::string& key, const Data& value)
     {
         /** TODO: use static visitor pattern to write class fields into output stream */
-        if (!key.empty()) {
+        if (!key.empty()) { // hack
             if (!isFirstPairInObject)
                 j.os << ',';
-            j.os << '"' << key << "\":";
+            j.os << '"' << key << "\":"; // OK, but consider: j.os << std::quoted(key) << ':';
             isFirstPairInObject = false;
         }
 
@@ -90,9 +91,12 @@ struct json_writer_t
         value.accept(*this);
         j.os << '}';
 
-        isFirstPairInObject = true;
+        isFirstPairInObject = true; // should be was_first!!!
     }
 
+    // Correct set of constrained overloads, but a simpler (more succinct) code would use
+    // if constexpr (Boolean<T>) { ... }
+    // else if constexpr (Number<T>) {...}
     template <Boolean T>
     void visit(const std::string& key, const T& value)
     {
@@ -127,7 +131,7 @@ json_ostream& operator<<(json_ostream& j, const T& value)
      * Tip: either use if-constexpr or overloading with SFINAE/concepts
      */
     json_writer_t writer{j};
-    writer.visit("", value);
+    writer.visit("", value); // convoluted design
     return j;
 }
 

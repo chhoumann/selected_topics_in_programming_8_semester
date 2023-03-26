@@ -19,6 +19,7 @@ struct json_istream
     {
         std::string s;
         is >> s;
+        // Should have used boolalpha
         if (s == "true")
             value = true;
         else if (s == "false")
@@ -40,7 +41,7 @@ struct json_istream
     {
         char c;
         is >> c;
-        if (c != '"')
+        if (c != '"') // OK, but consider `is.peek()` and then `is >> std::quoted(value);` instead of `std:getline`
             is.setstate(std::ios_base::failbit);
         else {
             std::getline(is, value, '"');
@@ -64,10 +65,10 @@ struct json_istream
                 else if (c == ',')
                     continue;
                 else
-                    is.unget();
-                typename T::value_type v;
+                    is.unget(); // should have used `is.peek()`
+                typename T::value_type v; // this doesn't work with C arrays. Instead `std::iter_value_t<T>` could be used
                 *this >> v;
-                value.push_back(v);
+                value.push_back(v); // should check if input is successful before pushing, i.e. if (is) value.push_back(v);
             }
         }
         return *this;
@@ -84,7 +85,7 @@ struct json_reader_t
     template <typename Data>
     void visit(const std::string& name, Data& value)
     {
-        value.accept(*this);
+        value.accept(*this); // Need to read the field name first, check that the name is correct, the colon character is in place and only then handle the value. Also need to check that the commas are in correct places.
     }
 
     template <Boolean T>
@@ -113,7 +114,7 @@ struct json_reader_t
 };
 
 template <typename T>
-json_istream& operator>>(json_istream& j, T& value)
+json_istream& operator>>(json_istream& j, T& value) // This is a non-member input operator overload, but you already have member input operator overloads, why duplicate? Did it compile for you?
 {
     /** TODO: implement input of arbitrary types so that tests in json_input_test pass.
      * Focus on one test at a time: begin from the first and then continue to next.
@@ -121,7 +122,7 @@ json_istream& operator>>(json_istream& j, T& value)
      * Tip: either use if-constexpr or overloading with SFINAE/concepts
      */
     json_reader_t reader{j};
-    reader.visit("", value);
+    reader.visit("", value); // Hackish-design. `json_reader_t` is needed only in case data accepts a visitor, therefore it needs to be constructed only in that case, while other cases can be handled with `if constexpr (is_bool_v<T>) { ... }`
     return j;
 }
 
