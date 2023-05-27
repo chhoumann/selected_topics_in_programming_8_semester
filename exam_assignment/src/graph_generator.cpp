@@ -1,10 +1,14 @@
+#include "types.cpp"
 #include <graphviz/gvc.h> // ensure that graphviz is installed - sudo apt install libgraphviz-dev
 #include <cstring>
 #include <iomanip>
 #include <cmath>
 #include <sstream>
 #include <iostream>
-#include "types.cpp"
+
+#include <string_view>
+#include <memory>
+#include <fstream>
 
 std::string formatDelay(double delay) {
     if (delay == static_cast<int>(delay)) {
@@ -24,48 +28,31 @@ std::string formatDelay(double delay) {
 
 
 void generate_graph(std::vector<Reaction>& reactions, std::string &&filename) {
-    GVC_t *gvc;
-    Agraph_t *g;
-    Agnode_t *n, *n_delay, *n_product;
-    Agedge_t *e;
-
-    gvc = gvContext();
-    g = agopen("Reactions", Agdirected, NULL);
+    auto gvc = std::unique_ptr<GVC_t, decltype(&gvFreeContext)>(gvContext(), gvFreeContext);
+    auto g = std::unique_ptr<Agraph_t, decltype(&agclose)>(agopen(const_cast<char*>("Reactions"), Agdirected, NULL), agclose);
 
     int delayCount = 0;
     for (auto& reaction : reactions) {
         for (auto& reactant : reaction.reactants) {
-            std::string reactant_name = reactant.getName();
-            char *mutable_str = strdup(reactant_name.c_str());
-            n = agnode(g, mutable_str, TRUE);
+            std::string_view reactant_name = reactant.getName();
 
-            agsafeset(n, "shape", "box", "");
-            agsafeset(n, "style", "filled", "");
-            agsafeset(n, "fillcolor", "cyan", "");
+            auto n = agnode(g.get(), const_cast<char*>(reactant_name.data()), TRUE);
+            agsafeset(n, const_cast<char*>("shape"), const_cast<char*>("box"), const_cast<char*>(""));
+            agsafeset(n, const_cast<char*>("style"), const_cast<char*>("fille"), const_cast<char*>(""));
+            agsafeset(n, const_cast<char*>("fillcolor"), const_cast<char*>("cyan"), const_cast<char*>(""));
 
             // delay node
-            std::string delay_name = "delay_" + std::to_string(delayCount++);
-            char *delay_str = strdup(delay_name.c_str());
-            n_delay = agnode(g, delay_str, TRUE);
+            auto delay_name = std::format("delay_{}", delayCount++);
+            auto n_delay = agnode(g.get(), const_cast<char*>(delay_name.c_str()), TRUE);
 
             std::string delay_string = formatDelay(reaction.delay);
-            char* delay_label = new char[delay_string.length() + 1];
-            std::strcpy(delay_label, delay_string.c_str());
-
-
-            agsafeset(n_delay, "label", delay_label, "");
-
-            // Don't forget to free the memory later
-            delete[] delay_label;
+            agsafeset(n_delay, "label", const_cast<char*>(delay_string.c_str()), "");
 
             agsafeset(n_delay, "shape", "oval", "");
             agsafeset(n_delay, "style", "filled", "");
             agsafeset(n_delay, "fillcolor", "yellow", "");
 
-            e = agedge(g, n, n_delay, NULL, TRUE);
-
-            free(mutable_str);  // don't forget to free the memory
-            free(delay_str);
+            auto e = agedge(g.get(), n, n_delay, NULL, TRUE);
         }
 
         for (auto& product : reaction.products) {
@@ -73,32 +60,28 @@ void generate_graph(std::vector<Reaction>& reactions, std::string &&filename) {
                 continue;
             }
 
-            std::string product_name = product.getName();
-            char *mutable_str = strdup(product_name.c_str());
-            n_product = agnode(g, mutable_str, TRUE);
+            std::string_view product_name = product.getName();
+            auto n_product = agnode(g.get(), const_cast<char*>(product_name.data()), TRUE);
 
-            agsafeset(n_product, "shape", "box", "");
-            agsafeset(n_product, "style", "filled", "");
-            agsafeset(n_product, "fillcolor", "cyan", "");
+            agsafeset(n_product, const_cast<char*>("shape"), const_cast<char*>("box"), const_cast<char*>(""));
+            agsafeset(n_product, const_cast<char*>("style"), const_cast<char*>("filled"), const_cast<char*>(""));
+            agsafeset(n_product, const_cast<char*>("fillcolor"), const_cast<char*>("cyan"), const_cast<char*>(""));
 
-            e = agedge(g, n_delay, n_product, NULL, TRUE);
 
-            free(mutable_str);  // don't forget to free the memory
+            auto e = agedge(g.get(), n_delay, n_product, NULL, TRUE);
         }
     }
 
-    gvLayout(gvc, g, "dot");
+    gvLayout(gvc.get(), g.get(), "dot");
 
-    FILE *fp = fopen(filename.c_str(), "w");
-    if (fp != NULL) {
-        gvRender(gvc, g, "png", fp);
-        fclose(fp);
+    FILE* file = fopen(filename.c_str(), "w");
+    if (file != nullptr) {
+        gvRender(gvc.get(), g.get(), "png", file);
+        fclose(file);
     }
     else {
         std::cerr << "Failed to open file for writing\n";
     }
     
-    gvFreeLayout(gvc, g);
-    agclose(g);
-    gvFreeContext(gvc);
+    gvFreeLayout(gvc.get(), g.get());
 }
