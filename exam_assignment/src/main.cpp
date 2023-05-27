@@ -3,6 +3,9 @@
 #include <iostream>
 #include <graphviz/gvc.h> // ensure that graphviz is installed - sudo apt install libgraphviz-dev
 #include <cstring>
+#include <iomanip>
+#include <cmath>
+#include <sstream>
 
 // Use operator overloading to support the reaction rule typesetting directly in C++ code.
 std::ostream& operator<<(std::ostream& os, const Reaction& reaction) {
@@ -21,7 +24,24 @@ std::ostream& operator<<(std::ostream& os, const Reaction& reaction) {
     return os;
 }
 
-void generate_graph(std::vector<Reaction>& reactions) {
+std::string formatDelay(double delay) {
+    if (delay == static_cast<int>(delay)) {
+        return std::to_string(static_cast<int>(delay));
+    } else {
+        double decimalPart = delay - static_cast<int>(delay);
+        int precision = 0;
+        while (std::abs(decimalPart - static_cast<int>(decimalPart)) > 1e-10 && precision < 10) {
+            decimalPart *= 10;
+            precision++;
+        }
+        std::stringstream stream;
+        stream << std::setprecision(precision) << std::fixed << delay;
+        return stream.str();
+    }
+}
+
+
+void generate_graph(std::vector<Reaction>& reactions, std::string &&filename) {
     GVC_t *gvc;
     Agraph_t *g;
     Agnode_t *n, *n_delay, *n_product;
@@ -45,10 +65,11 @@ void generate_graph(std::vector<Reaction>& reactions) {
             std::string delay_name = "delay_" + std::to_string(delayCount++);
             char *delay_str = strdup(delay_name.c_str());
             n_delay = agnode(g, delay_str, TRUE);
-            
-            std::string delay_string = std::to_string(reaction.delay);
+
+            std::string delay_string = formatDelay(reaction.delay);
             char* delay_label = new char[delay_string.length() + 1];
             std::strcpy(delay_label, delay_string.c_str());
+
 
             agsafeset(n_delay, "label", delay_label, "");
 
@@ -66,6 +87,10 @@ void generate_graph(std::vector<Reaction>& reactions) {
         }
 
         for (auto& product : reaction.products) {
+            if (product.getName() == "environment") {
+                continue;
+            }
+
             std::string product_name = product.getName();
             char *mutable_str = strdup(product_name.c_str());
             n_product = agnode(g, mutable_str, TRUE);
@@ -82,7 +107,7 @@ void generate_graph(std::vector<Reaction>& reactions) {
 
     gvLayout(gvc, g, "dot");
 
-    FILE *fp = fopen("graph.png", "w");
+    FILE *fp = fopen(filename.c_str(), "w");
     if (fp != NULL) {
         gvRender(gvc, g, "png", fp);
         fclose(fp);
@@ -108,7 +133,7 @@ int main(int argc, char const *argv[])
     }
 
     // Generate a graph of the reactions
-    generate_graph(reactions);
+    generate_graph(reactions, "circadian_oscillator.png");
 
     // auto sim = StochasticSimulator(v);
 

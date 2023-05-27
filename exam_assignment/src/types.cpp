@@ -87,6 +87,8 @@ public:
         reactions.push_back(re);
     }
 
+    /// @brief Assuming the environment means we don't care to track the species
+    /// @return Untracked species
     Species environment()
     {
         return Species("environment");
