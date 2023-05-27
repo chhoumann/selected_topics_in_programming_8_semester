@@ -1,6 +1,6 @@
 #include "types.cpp"
 
-vessel_t circadian_oscillator()
+System circadian_oscillator()
 {
     auto alphaA = 50.0;
     auto alpha_A = 500.0;
@@ -18,7 +18,7 @@ vessel_t circadian_oscillator()
     auto thetaA = 50.0;
     auto thetaR = 100.0;
 
-    auto v = vessel_t{};
+    auto v = System{};
     auto env = v.environment();
 
     auto DA = v("DA", 1);

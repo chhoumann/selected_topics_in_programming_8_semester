@@ -1,18 +1,29 @@
+#ifndef TYPES
+#define TYPES
 #include <string>
 #include <vector>
+#include <map>
+#include <stdexcept>
 
 class Species
 {
 public:
-    std::string name;
-    double amount;
+    explicit Species(const std::string &name) : _name(name) {}
 
-    Species(const std::string &name, double amount) : name(name), amount(amount) {}
+    const std::string &getName() const { return _name; }
+
+    // For compatibility with std::map
+    bool operator<(const Species& other) const {
+        return _name < other._name;
+    }
+
+private:
+    std::string _name;
 };
 
-Species operator+(const Species &lhs, const Species &rhs)
+std::vector<Species> operator+(const Species &lhs, const Species &rhs)
 {
-    return Species(lhs.name + " + " + rhs.name, lhs.amount + rhs.amount);
+    return {lhs, rhs};
 }
 
 class Reaction
@@ -27,34 +38,44 @@ public:
     std::vector<double> delta_P;
 
     Reaction(Reaction &&other, double delay) : delay(delay), reactants(std::move(other.reactants)), products(std::move(other.products)), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
-    Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : delay(delay), reactants(std::move(reactants)), products(std::move(products)) {}
+    Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
 };
 
-Reaction operator>>=(const Species &lhs, const Species &rhs)
+Reaction operator>>=(const Species &reactant, const Species &product)
 {
-    return Reaction({lhs}, {rhs});
+    return Reaction({reactant}, {product});
 }
 
-class vessel_t
+Reaction operator>>=(std::vector<Species> &&reactants, const Species &product)
+{
+    return Reaction(std::move(reactants), {product});
+}
+
+Reaction operator>>=(const Species &reactant, std::vector<Species> &&products)
+{
+    return Reaction({reactant}, std::move(products));
+}
+
+Reaction operator>>=(std::vector<Species> &&reactants, std::vector<Species> &&products)
+{
+    return Reaction(std::move(reactants), std::move(products));
+}
+
+class System
 {
 public:
-    std::vector<Species> species;
-    std::vector<Reaction> reactions;
+    const std::map<Species, int> &getSpecies() const { return species; }
+    const std::vector<Reaction> &getReactions() const { return reactions; }
 
     Species operator()(const std::string &name, double amount)
     {
-        // Or just throw if we're trying to add one that already exists?
-        for (auto &s : species)
+        if (species.find(Species(name)) != species.end())
         {
-            if (s.name == name)
-            {
-                s.amount += amount;
-                return s;
-            }
+            throw std::runtime_error("Species already exists");
         }
 
-        auto s = Species(name, amount);
-        species.push_back(s);
+        auto s = Species(name);
+        species.insert({s, amount});
 
         return s;
     }
@@ -68,6 +89,10 @@ public:
 
     Species environment()
     {
-        return Species("environment", 1);
+        return Species("environment");
     }
+private:
+    std::map<Species, int> species = {};
+    std::vector<Reaction> reactions = {};
 };
+#endif
