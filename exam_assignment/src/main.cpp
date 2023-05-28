@@ -5,11 +5,10 @@
 int main(int argc, char const *argv[])
 {
     auto v = circadian_oscillator();
-    auto reactions = v.getReactions();
+    auto const& reactions = v.getReactions();
 
-    generate_graph(reactions, "circadian_oscillator.png");
-
-    // auto sim = StochasticSimulator(v);
+    std::string filename = "circadian_oscillator.png";
+    generate_graph(reactions, filename);
 
     return 0;
 }

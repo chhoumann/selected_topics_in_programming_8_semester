@@ -22,19 +22,20 @@ std::string formatDelay(double delay)
             decimalPart *= 10;
             precision++;
         }
+        
         std::stringstream stream;
         stream << std::setprecision(precision) << std::fixed << delay;
         return stream.str();
     }
 }
 
-void generate_graph(std::vector<Reaction> &reactions, std::string &&filename)
+void generate_graph(const std::vector<Reaction> &reactions, const std::string &filename)
 {
     auto gvc = std::unique_ptr<GVC_t, decltype(&gvFreeContext)>(gvContext(), gvFreeContext);
-    auto g = std::unique_ptr<Agraph_t, decltype(&agclose)>(agopen(const_cast<char *>("Reactions"), Agdirected, NULL), agclose);
+    auto g = std::unique_ptr<Agraph_t, decltype(&agclose)>(agopen(const_cast<char *>("Reactions"), Agdirected, nullptr), agclose);
 
     int delayCount = 0;
-    for (auto &reaction : reactions)
+    for (const auto &reaction : reactions)
     {
         // delay node
         std::stringstream ss;
@@ -42,7 +43,7 @@ void generate_graph(std::vector<Reaction> &reactions, std::string &&filename)
         auto delay_name = ss.str();
         auto n_delay = agnode(g.get(), const_cast<char *>(delay_name.c_str()), TRUE);
 
-        for (auto &reactant : reaction.reactants)
+        for (const auto &reactant : reaction.reactants)
         {
             std::string_view reactant_name = reactant.getName();
 
@@ -58,10 +59,10 @@ void generate_graph(std::vector<Reaction> &reactions, std::string &&filename)
             agsafeset(n_delay, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
             agsafeset(n_delay, const_cast<char *>("fillcolor"), const_cast<char *>("yellow"), const_cast<char *>(""));
 
-            auto e = agedge(g.get(), n, n_delay, NULL, TRUE);
+            agedge(g.get(), n, n_delay, nullptr, TRUE);
         }
 
-        for (auto &product : reaction.products)
+        for (const auto &product : reaction.products)
         {
             if (product.getName() == "environment")
             {
@@ -75,14 +76,13 @@ void generate_graph(std::vector<Reaction> &reactions, std::string &&filename)
             agsafeset(n_product, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
             agsafeset(n_product, const_cast<char *>("fillcolor"), const_cast<char *>("cyan"), const_cast<char *>(""));
 
-            auto e = agedge(g.get(), n_delay, n_product, NULL, TRUE);
+            agedge(g.get(), n_delay, n_product, nullptr, TRUE);
         }
     }
 
     gvLayout(gvc.get(), g.get(), "dot");
 
-    FILE *file = fopen(filename.c_str(), "w");
-    if (file != nullptr)
+    if (auto file = fopen(filename.c_str(), "w"); file != nullptr)
     {
         gvRender(gvc.get(), g.get(), "png", file);
         fclose(file);
