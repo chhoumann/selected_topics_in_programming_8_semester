@@ -1,10 +1,8 @@
 #include "types.cpp"
 #include <graphviz/gvc.h> // ensure that graphviz is installed - sudo apt install libgraphviz-dev
-#include <cstring>
 #include <iomanip>
 #include <cmath>
 #include <iostream>
-
 #include <string_view>
 
 std::string formatDelay(double delay)
