@@ -19,3 +19,8 @@ target_link_libraries(${PROJECT_NAME}_tests gtest gtest_main)
 
 # Add the tests to be run by CTest
 add_test(NAME ${PROJECT_NAME}_tests COMMAND ${PROJECT_NAME}_tests)
+
+# Set C++ standard to C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
