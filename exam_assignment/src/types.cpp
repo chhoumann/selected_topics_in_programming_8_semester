@@ -1,6 +1,7 @@
 #ifndef TYPES
 #define TYPES
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <stdexcept>
@@ -8,9 +9,9 @@
 class Species
 {
 public:
-    explicit Species(const std::string &name) : _name(name) {}
+    explicit Species(std::string name) : _name(std::move(name)) {}
 
-    const std::string &getName() const { return _name; }
+    [[nodiscard]] const std::string &getName() const { return _name; }
 
     // For compatibility with std::map
     bool operator<(const Species& other) const {
@@ -37,7 +38,8 @@ public:
     std::vector<double> delta_R;
     std::vector<double> delta_P;
 
-    Reaction(Reaction &&other, double delay) : delay(delay), reactants(std::move(other.reactants)), products(std::move(other.products)), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
+    Reaction(Reaction &&other, double delay) : reactants(std::move(other.reactants)),
+                                               products(std::move(other.products)), delay(delay), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
     Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
 };
 
@@ -64,18 +66,18 @@ Reaction operator>>=(std::vector<Species> &&reactants, std::vector<Species> &&pr
 class System
 {
 public:
-    const std::map<Species, int> &getSpecies() const { return species; }
-    const std::vector<Reaction> &getReactions() const { return reactions; }
+    [[nodiscard]] const std::map<Species, int> &getSpecies() const { return species; }
+    [[nodiscard]] const std::vector<Reaction> &getReactions() const { return reactions; }
 
     Species operator()(const std::string &name, double amount)
     {
-        if (species.find(Species(name)) != species.end())
+        if (species.contains(Species(name)))
         {
             throw std::runtime_error("Species already exists");
         }
 
         auto s = Species(name);
-        species.insert({s, amount});
+        species.try_emplace(s, amount);
 
         return s;
     }
@@ -89,7 +91,7 @@ public:
 
     /// @brief Assuming the environment means we don't care to track the species
     /// @return Untracked species
-    Species environment()
+    Species environment() const
     {
         return Species("environment");
     }
