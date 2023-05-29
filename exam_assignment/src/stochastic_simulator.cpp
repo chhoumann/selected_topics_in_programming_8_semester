@@ -1,101 +1,125 @@
+#ifndef STOCHASTIC_SIMULATOR
+#define STOCHASTIC_SIMULATOR
 #include <iostream>
 #include <random>
-#include <string>
+#include <chrono>
+#include <limits>
+#include <memory>
+#include <unordered_map>
 
 #include "types.cpp"
 
-// Can also seed
-// std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
-std::default_random_engine generator;
-
-void compute_delay(Reaction &r, double lambda)
-{
-    double lambda_k = lambda;
-
-    // λk = λ * ∏i Ri,k
-    for (const auto &reactant : r.reactants)
+class Simulator {
+public:
+    Simulator(const System& system, double end_time)
+            : system_(system)
+            , end_time_(end_time)
+            , generator_(std::chrono::system_clock::now().time_since_epoch().count())
     {
-        lambda_k *= reactant.amount;
     }
 
-    std::exponential_distribution<double> distribution(lambda_k);
+    void simulate() {
+        std::cout << "Simulating..." << std::endl;
+        double t = 0;
 
-    r.delay = distribution(generator);
-}
+        auto& reactions = system_.getReactions();
+        std::unordered_map<Reaction, double, ReactionHash> reaction_delays;
 
-Reaction *find_min_delay_reaction(std::vector<Reaction> &reactions)
-{
-    // Find the reaction with minimum delay
-    double min_delay = std::numeric_limits<double>::max();
-    Reaction *min_reaction = nullptr;
-    for (auto &r : reactions)
-    {
-        if (r.delay < min_delay)
-        {
-            min_delay = r.delay;
-            min_reaction = &r;
+        while (t <= end_time_) {
+            std::cout << "t = " << t << std::endl;
+            for (auto &r : reactions) {
+                const auto delay = compute_delay(r);
+                reaction_delays[r] = delay;
+            }
+
+            auto next_reaction = find_min_delay_reaction(reaction_delays);
+            if (!next_reaction) {
+                std::cout << "No more reactions can proceed" << std::endl;
+                break; // No more reactions can proceed
+            }
+            std::cout << "Next reaction: " << *next_reaction << std::endl;
+            t += next_reaction->rate;
+            std::cout << "t = " << t << std::endl;
+            if (can_react(*next_reaction)) {
+                std::cout << "Reacting..." << std::endl;
+                react(*next_reaction);
+            }
+
+            std::cout << "State: " << std::endl;
+            print_state();
         }
     }
-    return min_reaction;
-}
 
-bool can_react(const Reaction &r)
-{
-    // Check if the reaction can proceed
-    for (size_t i = 0; i < r.reactants.size(); ++i)
-    {
-        if (r.reactants[i].amount < r.delta_R[i])
-        {
-            return false;
-        }
-    }
-    return true;
-}
+private:
+    System system_;
+    double end_time_;
+    std::default_random_engine generator_;
 
-void react(Reaction &r)
-{
-    // Execute the reaction
-    for (size_t i = 0; i < r.reactants.size(); ++i)
-    {
-        r.reactants[i].amount -= r.delta_R[i];
-    }
-    for (size_t i = 0; i < r.products.size(); ++i)
-    {
-        r.products[i].amount += r.delta_P[i];
-    }
-}
+    double compute_delay(const Reaction &r) {
+        double lambda_k = r.rate;
 
-void print_state(const std::vector<Species> &species)
-{
-    // Print the state of the system
-    for (const auto &s : species)
-    {
-        std::cout << s.amount << ' ';
-    }
-    std::cout << '\n';
-}
-
-void simulate(std::vector<Reaction> &reactions, std::vector<Species> &species, double end_time, double lambda)
-{
-    double t = 0;
-
-    while (t <= end_time)
-    {
-        for (auto &r : reactions)
-        {
-            compute_delay(r, lambda);
+        // λk = λ * ∏i Ri,k
+        for (const auto &reactant : r.reactants) {
+            lambda_k *= system_.getAmount(reactant);
         }
 
-        Reaction *next_reaction = find_min_delay_reaction(reactions);
-        if (next_reaction == nullptr)
-        {
-            break; // No more reactions can proceed
-        }
-        t += next_reaction->delay;
-        if (can_react(*next_reaction))
-        {
-            react(*next_reaction);
-        }
-        print_state(species);
+        std::exponential_distribution<double> distribution(lambda_k);
+        return distribution(generator_);
     }
-}
+
+    std::shared_ptr<Reaction> find_min_delay_reaction(std::unordered_map<Reaction, double, ReactionHash> &reaction_delays) {
+        double min_delay = std::numeric_limits<double>::max();
+        std::shared_ptr<Reaction> min_reaction = nullptr;
+
+        for (auto &[reaction, delay] : reaction_delays) {
+            if (delay < min_delay) {
+                min_reaction = std::make_shared<Reaction>(reaction);
+                min_delay = delay;
+            }
+        }
+
+        return min_reaction;
+    }
+
+    bool can_react(const Reaction &r) {
+        std::cout << "Checking if reaction can proceed..." << std::endl;
+        std::cout << "Reaction: " << r << std::endl;
+        std::cout << "Reactants Size: " << r.reactants.size() << std::endl;
+
+        for (size_t i = 0; i < r.reactants.size(); ++i) {
+            std::cout << "What the fuck just do it" << std::endl; //<< r.reactants[i].getName() << " >= " << r.delta_R[i] << std::endl;
+            auto species_amount = system_.getAmount(r.reactants.at(i));
+            std::cout << "amount: " << species_amount << std::endl;
+
+            if (species_amount < r.delta_R[i]) {
+                std::cout << "Reaction cannot proceed" << std::endl;
+                return false;
+            }
+        }
+        std::cout << "Reaction can proceed" << std::endl;
+        return true;
+    }
+
+    void react(Reaction &r) {
+        for (size_t i = 0; i < r.reactants.size(); ++i) {
+            const double amount = system_.getAmount(r.reactants[i]) - r.delta_R[i];
+            system_.setAmount(r.reactants[i], amount);
+        }
+
+        for (size_t i = 0; i < r.products.size(); ++i) {
+            const double amount = system_.getAmount(r.products[i]) + r.delta_P[i];
+            system_.setAmount(r.products[i], amount);
+        }
+    }
+
+    void print_state() {
+        auto species = system_.getSpecies();
+
+        for (const auto &[s, amount] : species) {
+            std::cout << s.getName() << ": " << amount << " ";
+        }
+
+        std::cout << '\n';
+    }
+};
+#endif
