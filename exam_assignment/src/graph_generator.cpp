@@ -35,7 +35,7 @@ void generate_graph(const std::vector<Reaction> &reactions, const std::string &f
     int delayCount = 0;
     for (const auto &reaction : reactions)
     {
-        // delay node
+        // rate node
         std::stringstream ss;
         ss << "delay_" << delayCount++;
         auto delay_name = ss.str();
@@ -50,7 +50,7 @@ void generate_graph(const std::vector<Reaction> &reactions, const std::string &f
             agsafeset(n, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
             agsafeset(n, const_cast<char *>("fillcolor"), const_cast<char *>("cyan"), const_cast<char *>(""));
 
-            std::string delay_string = formatDelay(reaction.delay);
+            std::string delay_string = formatDelay(reaction.rate);
             agsafeset(n_delay, const_cast<char *>("label"), const_cast<char *>(delay_string.c_str()), const_cast<char *>(""));
 
             agsafeset(n_delay, const_cast<char *>("shape"), const_cast<char *>("oval"), const_cast<char *>(""));
