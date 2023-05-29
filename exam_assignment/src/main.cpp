@@ -1,5 +1,5 @@
 #include "types.cpp"
-#include "seihr.cpp"
+#include "examples/seihr.cpp"
 #include "graph_generator.cpp"
 #include <iostream>
 

@@ -1,7 +1,7 @@
 //
 // Created by chhou on 28/05/2023.
 //
-#include "types.cpp"
+#include "../types.cpp"
 #include <cmath>
 
 System seihr(uint32_t N)
