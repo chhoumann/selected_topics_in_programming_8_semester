@@ -34,14 +34,21 @@ public:
     std::vector<Species> reactants = {};
     std::vector<Species> products = {};
 
-    double rate;
+    double rate() const { return rate_; }
+    double delay() const { return delay_; }
+
+    void setDelay(double delay) { delay_ = delay; }
 
     std::vector<double> delta_R;
     std::vector<double> delta_P;
 
-    Reaction(Reaction &&other, double delay) : reactants(std::move(other.reactants)),
-                                               products(std::move(other.products)), rate(delay), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
+    Reaction(Reaction &&other, double rate) : reactants(std::move(other.reactants)),
+                                               products(std::move(other.products)), rate_(rate), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
     Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
+
+private:
+    double rate_;
+    double delay_;
 };
 
 Reaction operator>>=(const Species &reactant, const Species &product)
@@ -75,7 +82,7 @@ std::ostream& operator<<(std::ostream& os, const Reaction& reaction) {
         os << " + " << reaction.products[i].getName();
     }
 
-    os << " (rate: " << reaction.rate << ")";
+    os << " (rate: " << reaction.rate() << ")";
 
     return os;
 }
@@ -91,7 +98,7 @@ struct ReactionHash {
             h ^= std::hash<std::string>{}(s.getName());
         }
 
-        h ^= std::hash<double>{}(r.rate);
+        h ^= std::hash<double>{}(r.rate());
 
         return h;
     }
@@ -107,7 +114,7 @@ class System
 {
 public:
     [[nodiscard]] const std::map<Species, int> &getSpecies() const { return species; }
-    [[nodiscard]] const std::vector<Reaction> &getReactions() const { return reactions; }
+    [[nodiscard]] std::vector<Reaction> &getReactions() { return reactions; }
 
     Species operator()(const std::string &name, double amount)
     {
