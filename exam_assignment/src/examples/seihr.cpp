@@ -1,6 +1,3 @@
-//
-// Created by chhou on 28/05/2023.
-//
 #include "../types.cpp"
 #include <cmath>
 
