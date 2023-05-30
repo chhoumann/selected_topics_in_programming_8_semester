@@ -6,6 +6,9 @@
 #include <limits>
 #include <memory>
 #include <unordered_map>
+#include <queue>
+#include <ranges>
+#include <algorithm>
 
 #include "types.cpp"
 
@@ -20,31 +23,37 @@ public:
 
     void simulate() {
         double t = 0;
+        auto reactions = system_.getReactions();
 
-        auto& reactions = system_.getReactions();
-        // start tracking time
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        // Start tracking time
+        auto begin = std::chrono::steady_clock::now();
 
         while (t <= end_time_) {
+            // Recompute delays and sort the reactions by delay
             for (auto &r : reactions) {
-                const auto delay = compute_delay(r);
-                r.setDelay(delay);
+                r.setDelay(compute_delay(r));
+            }
+            std::ranges::sort(reactions, [](const Reaction& a, const Reaction& b) {
+                return a.delay() < b.delay();
+            });
+
+            // Find the next reaction that can actually react
+            auto next_reaction_it = std::ranges::find_if(reactions, [this](const Reaction& r) {
+                return can_react(r);
+            });
+
+            // Break if no reaction can proceed
+            if (next_reaction_it == reactions.end()) {
+                break;
             }
 
-            auto next_reaction = find_min_delay_reaction(reactions);
-            if (!next_reaction) {
-                break; // No more reactions can proceed
-            }
-
-            t += next_reaction->delay();;
-
-            if (can_react(*next_reaction)) {
-                react(*next_reaction);
-            }
+            // React and advance time
+            react(*next_reaction_it);
+            t += next_reaction_it->delay();
         }
 
-        // end tracking time
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        // End tracking time
+        auto end = std::chrono::steady_clock::now();
         std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
     }
 
@@ -53,16 +62,18 @@ private:
     double end_time_;
     std::default_random_engine generator_;
 
-    double compute_delay(const Reaction &r) {
+    double compute_delay(Reaction &r) {
         double lambda_k = r.rate();
 
-        // λk = λ * ∏i Ri,k
-        for (const auto &reactant : r.reactants) {
-            lambda_k *= system_.amount(reactant);
+        if (can_react(r)) { // compute delay only for reactions that can actually react
+            for (const auto &reactant : r.reactants) {
+                lambda_k *= system_.amount(reactant);
+            }
+            std::exponential_distribution<double> distribution(lambda_k);
+            return distribution(generator_);
+        } else {
+            return std::numeric_limits<double>::max();  // return maximum possible delay for reactions that cannot react
         }
-
-        std::exponential_distribution<double> distribution(lambda_k);
-        return distribution(generator_);
     }
 
     std::shared_ptr<Reaction> find_min_delay_reaction(const std::vector<Reaction> &reactions) {
