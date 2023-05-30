@@ -138,14 +138,16 @@ public:
 
     /// @brief Assuming the environment means we don't care to track the species
     /// @return Untracked species
-    Species environment() const
+    Species environment()
     {
-        return Species("environment");
+        const std::string environment = "environment";
+        return (*this)(environment, 0.0);
     }
 
-    int getAmount(const Species &s) const {
+    int amount(const Species &s) const {
         if (!species.contains(s)) {
-            throw std::runtime_error("Species does not exist");
+            auto name = s.getName();
+            throw std::runtime_error("Species '" + name + "' does not exist");
         }
 
         return species.at(s);
