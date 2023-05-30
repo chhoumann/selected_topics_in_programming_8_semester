@@ -35,7 +35,9 @@ public:
             if (!next_reaction) {
                 break; // No more reactions can proceed
             }
-            t += next_reaction->delay();
+
+            t += next_reaction->delay();;
+
             if (can_react(*next_reaction)) {
                 react(*next_reaction);
             }
