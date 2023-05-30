@@ -35,12 +35,13 @@ int main(int argc, char const *argv[])
     auto s = Simulator(v, 100);
     s.simulate(monitor);
 
-    plot_t plot = plot_t("chart", 800, 800);
+    plot_t plot = plot_t("Trajectory of Circadian Rhythm", 800, 800);
     for (const auto& [species, quantities] : speciesQuantities) {
-        if (species.getName() == "environment") {
-            continue;
+        std::string speciesName = species.getName();
+
+        if (speciesName == "C" || speciesName == "A" || speciesName == "R") {
+            plot.lines(speciesName, timePoints, quantities);
         }
-        plot.lines(species.getName(), timePoints, quantities);
     }
     plot.process();
 
