@@ -58,7 +58,7 @@ private:
 
         // λk = λ * ∏i Ri,k
         for (const auto &reactant : r.reactants) {
-            lambda_k *= system_.getAmount(reactant);
+            lambda_k *= system_.amount(reactant);
         }
 
         std::exponential_distribution<double> distribution(lambda_k);
@@ -81,7 +81,7 @@ private:
 
     bool can_react(const Reaction &r) {
         for (size_t i = 0; i < r.reactants.size(); ++i) {
-            auto species_amount = system_.getAmount(r.reactants.at(i));
+            auto species_amount = system_.amount(r.reactants.at(i));
 
             // Currently assuming only 1 reactant is needed
             if (species_amount < 1) {
@@ -94,13 +94,13 @@ private:
     void react(Reaction &r) {
         for (size_t i = 0; i < r.reactants.size(); ++i) {
             // Currently assuming only 1 reactant is consumed
-            const double amount = system_.getAmount(r.reactants[i]) - 1;
+            const double amount = system_.amount(r.reactants[i]) - 1;
             system_.setAmount(r.reactants[i], amount);
         }
 
         for (size_t i = 0; i < r.products.size(); ++i) {
             // Currently assuming only 1 product is produced
-            const double amount = system_.getAmount(r.products[i]) + 1;
+            const double amount = system_.amount(r.products[i]) + 1;
             system_.setAmount(r.products[i], amount);
         }
     }

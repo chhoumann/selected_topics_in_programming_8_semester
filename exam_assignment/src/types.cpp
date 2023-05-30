@@ -144,7 +144,7 @@ public:
         return (*this)(environment, 0.0);
     }
 
-    int getAmount(const Species &s) const {
+    int amount(const Species &s) const {
         if (!species.contains(s)) {
             auto name = s.getName();
             throw std::runtime_error("Species '" + name + "' does not exist");
