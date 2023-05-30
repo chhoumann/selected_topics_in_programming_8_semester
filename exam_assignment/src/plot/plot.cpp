@@ -43,7 +43,6 @@ plot_t::plot_t(std::string title, int width, int height):
 
 plot_t::~plot_t() noexcept = default;
 
-// Helper template function for DRY code
 template <typename Series, typename Chart>
 void add_xy(Chart& chart, const std::string& name, const std::vector<double>& x, const std::vector<double>& y)
 {
