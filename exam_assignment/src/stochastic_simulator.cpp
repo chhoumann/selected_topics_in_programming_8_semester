@@ -18,7 +18,8 @@ public:
     {
     }
 
-    void simulate() {
+    template<typename Monitor>
+    void simulate(Monitor monitor) {
         double t = 0;
 
         auto& reactions = system_.getReactions();
@@ -38,9 +39,12 @@ public:
 
             t += next_reaction->delay();;
 
-            if (can_react(*next_reaction)) {
-                react(*next_reaction);
+            if (!can_react(*next_reaction)) {
+                continue;
             }
+
+            react(*next_reaction);
+            monitor(system_, t);
         }
 
         // end tracking time
