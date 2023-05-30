@@ -46,6 +46,10 @@ public:
                                                products(std::move(other.products)), rate_(rate), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
     Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
 
+    bool operator<(const Reaction &other) const {
+        return this->delay() < other.delay();
+    }
+
 private:
     double rate_;
     double delay_;
