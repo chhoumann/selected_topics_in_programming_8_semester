@@ -81,7 +81,7 @@ void plot_seihr() {
     auto s_seihr = Simulator(seihr_system, 100);
     s_seihr.simulate(ips_seihr_species_monitor);
 
-    auto plot = plot_t("Trajectory of SEIHR (N=10'000, rate=0.001)", "Time, days", "Count", 1920, 1080);
+    auto plot = plot_t("Trajectory of SEIHR (N=10'000)", "Time, days", "Count", 1920, 1080);
     for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
         std::string speciesName = species.getName();
 
