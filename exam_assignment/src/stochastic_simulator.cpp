@@ -107,14 +107,5 @@ private:
             system_.setAmount(r.products[i], amount);
         }
     }
-
-    void print_state() {
-
-        for (auto species = system_.getSpecies(); const auto &[s, amount] : species) {
-            std::cout << s.getName() << ": " << amount << " " << std::endl;
-        }
-
-        std::cout << '\n';
-    }
 };
 #endif
