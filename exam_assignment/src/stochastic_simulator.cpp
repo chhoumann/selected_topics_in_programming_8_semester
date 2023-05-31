@@ -22,7 +22,6 @@ public:
         double t = 0;
 
         auto& reactions = system_.getReactions();
-        // start tracking time
 
         while (t <= end_time_) {
             for (auto &r : reactions) {

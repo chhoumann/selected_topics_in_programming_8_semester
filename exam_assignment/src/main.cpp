@@ -158,7 +158,7 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
     }
 
     auto end = std::chrono::steady_clock::now();
-    std::cout << "Time elapsed for " << num_simulations << "w. CL " << concurrency_level << " = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
+    std::cout << "Time elapsed for " << num_simulations << " w. CL " << concurrency_level << " = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
 
     double avg_peak_nj = std::accumulate(results_nj.begin(), results_nj.end(), 0.0) / results_nj.size();
     double avg_peak_dk = std::accumulate(results_dk.begin(), results_dk.end(), 0.0) / results_dk.size();
@@ -174,9 +174,9 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
 
 int main(int argc, char const *argv[])
 {
-    make_graphs();
-    plot_simple();
-    plot_circadian();
-    plot_seihr();
-    peak_seihr(100, 20);
+    //make_graphs();
+    //plot_simple();
+    //plot_circadian();
+    //plot_seihr();
+    //peak_seihr(100, 20);
 }

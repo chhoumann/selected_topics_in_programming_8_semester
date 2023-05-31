@@ -8,7 +8,7 @@
 
 class ThreadPool {
 public:
-    ThreadPool(size_t concurrency_level)
+    explicit ThreadPool(size_t concurrency_level)
             : available(concurrency_level) {
     }
 
@@ -17,7 +17,7 @@ public:
         using ReturnType = decltype(f(args...));
 
         auto task = std::make_shared<std::packaged_task<ReturnType()> >(
-                std::bind(std::forward<Function>(f), std::forward<Args>(args)...)
+                std::bind_front(std::forward<Function>(f), std::forward<Args>(args)...)
         );
 
         std::future<ReturnType> result = task->get_future();
@@ -31,7 +31,7 @@ public:
             --available;
         }
 
-        std::thread([this, task]() {
+        std::jthread([this, task]() {
             (*task)();
 
             {

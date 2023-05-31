@@ -47,4 +47,3 @@ public:
 private:
     std::string targetSpeciesName;
 };
-
