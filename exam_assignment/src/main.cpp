@@ -10,6 +10,7 @@
 #include <memory>
 #include <tuple>
 #include "monitor/monitor.cpp"
+#include "thread_pool.cpp"
 
 template <typename Func>
 auto make_ips_counter(Func& func) {
@@ -98,7 +99,6 @@ void plot_seihr() {
     plot.save_to_png("seihr.png");
 }
 
-
 void plot_simple() {
     auto simple_system = simple();
     auto trajectoryMonitor = SpeciesTrajectoryMonitor();
@@ -119,71 +119,6 @@ void plot_simple() {
     plot_simple.save_to_png("simple.png");
 }
 
-#include <thread>
-#include <mutex>
-#include <future>
-#include <numeric>
-
-//void peak_seihr() {
-//    auto seihr_system_nj = seihr(589'755); // N_NJ
-//    auto seihr_system_dk = seihr(5'882'763); // N_DK
-//
-//    std::cout << "Simulating SEIHR..." << std::endl;
-//
-//    auto s_seihr_nj = Simulator(seihr_system_nj, 100);
-//    auto h_mon_nj = SpeciesPeakMonitor("H");
-//    auto ips_h_mon_nj = make_ips_counter(h_mon_nj);
-//    s_seihr_nj.simulate(ips_h_mon_nj);
-//
-//    auto s_seihr_dk = Simulator(seihr_system_dk, 100);
-//    auto h_mon_dk = SpeciesPeakMonitor("H");
-//    auto ips_h_mon_dk = make_ips_counter(h_mon_dk);
-//    s_seihr_dk.simulate(ips_h_mon_dk);
-//
-//    std::cout << "Peak of Hospitalized in NJ: " << h_mon_nj.getSpeciesPeak() << std::endl;
-//    std::cout << "Peak of Hospitalized in DK: " << h_mon_dk.getSpeciesPeak() << std::endl;
-//}
-
-//void run_simulation(int N, int num_simulations, double& avg_peak, std::mutex& mtx) {
-//    double total_peak = 0;
-//
-//    for (int i = 0; i < num_simulations; ++i) {
-//        auto seihr_system = seihr(N);
-//
-//        auto s_seihr = Simulator(seihr_system, 100);
-//        auto h_mon = SpeciesPeakMonitor("H");
-//        auto ips_h_mon = make_ips_counter(h_mon);
-//
-//        s_seihr.simulate(ips_h_mon);
-//
-//        total_peak += h_mon.getSpeciesPeak();
-//    }
-//
-//    mtx.lock();
-//    avg_peak = total_peak / num_simulations;
-//    mtx.unlock();
-//}
-//
-//void peak_seihr(int num_simulations) {
-//    const int N_NJ = 589'755;
-//    const int N_DK = 5'882'763;
-//
-//    std::cout << "Simulating SEIHR..." << std::endl;
-//
-//    std::mutex mtx;
-//    double avg_peak_nj = 0;
-//    double avg_peak_dk = 0;
-//
-//    std::thread t1(run_simulation, N_NJ, num_simulations, std::ref(avg_peak_nj), std::ref(mtx));
-//    std::thread t2(run_simulation, N_DK, num_simulations, std::ref(avg_peak_dk), std::ref(mtx));
-//
-//    t1.join();
-//    t2.join();
-//
-//    std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak_nj << std::endl;
-//    std::cout << "Average peak of Hospitalized in DK over " << num_simulations << " simulations: " << avg_peak_dk << std::endl;
-//}
-
 double run_simulation(int N) {
     auto seihr_system = seihr(N);
 
@@ -195,18 +130,21 @@ double run_simulation(int N) {
     return *h_mon.speciesPeak;
 }
 
-void peak_seihr(int num_simulations) {
+void peak_seihr(int num_simulations, size_t concurrency_level) {
+    auto begin = std::chrono::steady_clock::now();
     const int N_NJ = 589'755;
     const int N_DK = 5'882'763;
 
     std::cout << "Simulating SEIHR..." << std::endl;
 
+    ThreadPool thread_pool(concurrency_level);
+
     std::vector<std::future<double>> futures_nj;
     std::vector<std::future<double>> futures_dk;
 
     for(int i = 0; i < num_simulations; ++i) {
-        futures_nj.push_back(std::async(std::launch::async, run_simulation, N_NJ));
-        futures_dk.push_back(std::async(std::launch::async, run_simulation, N_DK));
+        futures_nj.push_back(thread_pool.enqueue(run_simulation, N_NJ));
+        futures_dk.push_back(thread_pool.enqueue(run_simulation, N_DK));
     }
 
     std::vector<double> results_nj;
@@ -222,6 +160,9 @@ void peak_seihr(int num_simulations) {
     double avg_peak_nj = std::accumulate(results_nj.begin(), results_nj.end(), 0.0) / results_nj.size();
     double avg_peak_dk = std::accumulate(results_dk.begin(), results_dk.end(), 0.0) / results_dk.size();
 
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "Time elapsed for " << num_simulations << "w. CL " << concurrency_level << " = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
+
     std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak_nj << std::endl;
     std::cout << "Average peak of Hospitalized in DK over " << num_simulations << " simulations: " << avg_peak_dk << std::endl;
 }
@@ -232,5 +173,5 @@ int main(int argc, char const *argv[])
     //plot_simple();
     //plot_circadian();
     //plot_seihr();
-    peak_seihr(10);
+    peak_seihr(10, 20);
 }
