@@ -129,11 +129,13 @@ public:
         return s;
     }
 
-    void operator()(Reaction &&r, double rate)
+    Reaction operator()(Reaction &&r, double rate)
     {
         auto re = Reaction(std::move(r), rate);
 
         reactions.push_back(re);
+
+        return re;
     }
 
     /// @brief Assuming the environment means we don't care to track the species
