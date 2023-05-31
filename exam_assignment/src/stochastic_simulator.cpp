@@ -23,7 +23,6 @@ public:
 
         auto& reactions = system_.getReactions();
         // start tracking time
-        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
         while (t <= end_time_) {
             for (auto &r : reactions) {
@@ -45,10 +44,6 @@ public:
             react(*next_reaction);
             monitor(system_, t);
         }
-
-        // end tracking time
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
     }
 
 private:
