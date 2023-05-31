@@ -11,12 +11,10 @@ private:
     std::unordered_map<std::string, T> table;
 
 public:
-    // Store a symbol into the table
     void store(const std::string &key, const T &value) {
         table[key] = value;
     }
 
-    // Lookup a symbol from the table
     T lookup(const std::string &key) const {
         if(table.contains(key)) {
             return table.at(key);
