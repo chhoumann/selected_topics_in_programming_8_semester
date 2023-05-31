@@ -3,9 +3,28 @@
 #include "graph_generator.cpp"
 #include "stochastic_simulator.cpp"
 #include "examples/circadian_oscillator.cpp"
+#include "examples/simple.cpp"
 #include "plot/plot.cpp"
 #include <iostream>
 #include <functional>
+
+template <typename Func>
+auto make_ips_counter(Func func) {
+    return [func](auto&&... args) {
+        static auto lastSecond = std::chrono::steady_clock::now();
+        static int iterations = 0;
+
+        func(std::forward<decltype(args)>(args)...);
+        iterations++;
+
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::seconds>(now - lastSecond).count() >= 1) {
+            std::cout << "Iterations per second: " << iterations / 1000 << "k" << '\n';
+            iterations = 0;
+            lastSecond = now;
+        }
+    };
+}
 
 void make_graphs() {
     auto seihr_system = seihr(100'000);
@@ -28,7 +47,6 @@ void plot_circadian() {
     std::map<Species, std::vector<double>> speciesQuantities_circadian;
 
     auto monitor_circadian = [&timePoints_circadian, &speciesQuantities_circadian](const System& system, double t) {
-        std::cout << "Circadian: " << "t = " << t << std::endl;
         const auto& species = system.getSpecies();
 
         // Store the time point
@@ -39,6 +57,8 @@ void plot_circadian() {
             speciesQuantities_circadian[speciesName].push_back(quantity);
         }
     };
+
+    auto ips_circadian = make_ips_counter(monitor_circadian);
 
     std::cout << "Simulating Circadian Rhythm..." << std::endl;
     auto s_circadian = Simulator(circadian_system, 100);
@@ -54,24 +74,6 @@ void plot_circadian() {
     }
 
     plot_circadian.process();
-}
-
-template <typename Func>
-auto make_ips_counter(Func func) {
-    return [func](auto&&... args) {
-        static auto lastSecond = std::chrono::steady_clock::now();
-        static int iterations = 0;
-
-        func(std::forward<decltype(args)>(args)...);
-        iterations++;
-
-        auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::seconds>(now - lastSecond).count() >= 1) {
-            std::cout << "Iterations per second: " << iterations / 1000 << "k" << '\n';
-            iterations = 0;
-            lastSecond = now;
-        }
-    };
 }
 
 void plot_seihr() {
@@ -114,7 +116,42 @@ void plot_seihr() {
     plot_seihr.process();
 }
 
+
+void plot_simple() {
+    auto simple_system = simple();
+
+    std::vector<double> timePoints;
+    std::map<Species, std::vector<double>> speciesQuantities;
+
+    auto monitor = [&timePoints, &speciesQuantities](const System& system, double t) {
+        const auto& species = system.getSpecies();
+
+        // Store the time point
+        timePoints.push_back(t);
+
+        // Store the quantity of each species
+        for (const auto& [speciesName, quantity] : species) {
+            speciesQuantities[speciesName].push_back(quantity);
+        }
+    };
+
+    auto ips_species_monitor = make_ips_counter(monitor);
+
+    std::cout << "Simulating Simple..." << std::endl;
+    auto s_simple = Simulator(simple_system, 100'000);
+    s_simple.simulate(ips_species_monitor);
+
+    plot_t plot_simple = plot_t("Trajectory of Simple", 800, 800);
+    for (const auto& [species, quantities] : speciesQuantities) {
+        std::string speciesName = species.getName();
+
+        plot_simple.lines(speciesName, timePoints, quantities);
+    }
+
+    plot_simple.process();
+}
+
 int main(int argc, char const *argv[])
 {
-    plot_seihr();
+    plot_simple();
 }
