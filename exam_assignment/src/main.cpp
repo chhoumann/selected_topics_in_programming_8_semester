@@ -60,11 +60,11 @@ void plot_circadian() {
     s_circadian.simulate(ips_circadian);
 
     auto plot = plot_t("Trajectory of Circadian Rhythm", "Time, hours", "Count", 1920, 1080);
-    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
+    for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
         std::string speciesName = species.getName();
 
         if (speciesName == "C" || speciesName == "A" || speciesName == "R") {
-            plot.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
+            plot.lines(speciesName, *trajectoryMonitor.timePoints, quantities);
         }
     }
 
@@ -82,16 +82,16 @@ void plot_seihr() {
     s_seihr.simulate(ips_seihr_species_monitor);
 
     auto plot = plot_t("Trajectory of SEIHR (N=10'000, rate=0.001)", "Time, days", "Count", 1920, 1080);
-    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
+    for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
         std::string speciesName = species.getName();
 
         if (speciesName == "H") {
             std::vector<double> transformedQuantities;
             std::transform(quantities.begin(), quantities.end(), std::back_inserter(transformedQuantities), [](double quantity) { return quantity * 1000; });
 
-            plot.lines(speciesName + "*1000", trajectoryMonitor.getTimePoints(), transformedQuantities);
+            plot.lines(speciesName + "*1000", *trajectoryMonitor.timePoints, transformedQuantities);
         } else {
-            plot.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
+            plot.lines(speciesName, *trajectoryMonitor.timePoints, quantities);
         }
     }
 
@@ -109,10 +109,10 @@ void plot_simple() {
     s_simple.simulate(ips_species_monitor);
 
     auto plot_simple = plot_t("Trajectory of Simple (A=100, B=0, C=2)", "Time", "Count", 1920, 1080);
-    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
+    for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
         std::string speciesName = species.getName();
 
-        plot_simple.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
+        plot_simple.lines(speciesName, *trajectoryMonitor.timePoints, quantities);
     }
 
     plot_simple.process();
@@ -157,21 +157,26 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
         results_dk.push_back(f.get());
     }
 
-    double avg_peak_nj = std::accumulate(results_nj.begin(), results_nj.end(), 0.0) / results_nj.size();
-    double avg_peak_dk = std::accumulate(results_dk.begin(), results_dk.end(), 0.0) / results_dk.size();
-
     auto end = std::chrono::steady_clock::now();
     std::cout << "Time elapsed for " << num_simulations << "w. CL " << concurrency_level << " = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
 
+    double avg_peak_nj = std::accumulate(results_nj.begin(), results_nj.end(), 0.0) / results_nj.size();
+    double avg_peak_dk = std::accumulate(results_dk.begin(), results_dk.end(), 0.0) / results_dk.size();
     std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak_nj << std::endl;
     std::cout << "Average peak of Hospitalized in DK over " << num_simulations << " simulations: " << avg_peak_dk << std::endl;
+
+    double max_peak_nj = *std::max_element(results_nj.begin(), results_nj.end());
+    double max_peak_dk = *std::max_element(results_dk.begin(), results_dk.end());
+
+    std::cout << "Maximum peak of Hospitalized in NJ over " << num_simulations << " simulations: " << max_peak_nj << std::endl;
+    std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak_dk << std::endl;
 }
 
 int main(int argc, char const *argv[])
 {
-    //make_graphs();
-    //plot_simple();
-    //plot_circadian();
-    //plot_seihr();
-    peak_seihr(10, 20);
+    make_graphs();
+    plot_simple();
+    plot_circadian();
+    plot_seihr();
+    peak_seihr(100, 20);
 }

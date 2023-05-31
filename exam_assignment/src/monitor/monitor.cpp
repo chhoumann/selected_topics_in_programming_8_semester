@@ -10,29 +10,22 @@ public:
 
 class SpeciesTrajectoryMonitor : public Monitor {
 public:
-    SpeciesTrajectoryMonitor() = default;
+    SpeciesTrajectoryMonitor()
+            : timePoints(std::make_shared<std::vector<double>>()),
+              speciesQuantities(std::make_shared<std::map<Species, std::vector<double>>>()) {}
 
     void operator()(const System& system, double t) override {
         const auto& allSpecies = system.getSpecies();
 
-        timePoints.push_back(t);
+        timePoints->push_back(t);
 
         for (const auto& [species, quantity] : allSpecies) {
-            speciesQuantities[species].push_back(quantity);
+            (*speciesQuantities)[species].push_back(quantity);
         }
     }
 
-    [[nodiscard]] const std::vector<double>& getTimePoints() const {
-        return timePoints;
-    }
-
-    [[nodiscard]] const std::map<Species, std::vector<double>>& getSpeciesQuantities() const {
-        return speciesQuantities;
-    }
-
-private:
-    std::vector<double> timePoints;
-    std::map<Species, std::vector<double>> speciesQuantities;
+    std::shared_ptr<std::vector<double>> timePoints;
+    std::shared_ptr<std::map<Species, std::vector<double>>> speciesQuantities;
 };
 
 class SpeciesPeakMonitor : public Monitor {
