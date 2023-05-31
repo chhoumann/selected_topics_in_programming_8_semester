@@ -167,7 +167,6 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
 
     double max_peak_nj = *std::max_element(results_nj.begin(), results_nj.end());
     double max_peak_dk = *std::max_element(results_dk.begin(), results_dk.end());
-
     std::cout << "Maximum peak of Hospitalized in NJ over " << num_simulations << " simulations: " << max_peak_nj << std::endl;
     std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak_dk << std::endl;
 }

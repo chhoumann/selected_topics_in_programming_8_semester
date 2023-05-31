@@ -1,4 +1,5 @@
 #include <map>
+#include <utility>
 #include <vector>
 
 class Monitor {
@@ -32,7 +33,7 @@ class SpeciesPeakMonitor : public Monitor {
 public:
     std::shared_ptr<double> speciesPeak = std::make_shared<double>(0.0);
 
-    SpeciesPeakMonitor(const std::string& targetSpeciesName) : targetSpeciesName(targetSpeciesName) {}
+    explicit SpeciesPeakMonitor(std::string targetSpeciesName) : targetSpeciesName(std::move(targetSpeciesName)) {}
 
     void operator()(const System& system, double t) override {
         const auto& allSpecies = system.getSpecies();
