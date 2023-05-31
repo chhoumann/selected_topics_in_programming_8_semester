@@ -7,10 +7,13 @@
 #include "plot/plot.cpp"
 #include <iostream>
 #include <functional>
+#include <memory>
+#include <tuple>
+#include "monitor/monitor.cpp"
 
 template <typename Func>
-auto make_ips_counter(Func func) {
-    return [func](auto&&... args) {
+auto make_ips_counter(Func& func) {
+    return [&func](auto&&... args) {
         static auto lastSecond = std::chrono::steady_clock::now();
         static int iterations = 0;
 
@@ -30,128 +33,96 @@ void make_graphs() {
     auto seihr_system = seihr(100'000);
     auto const& reactions_seihr = seihr_system.getReactions();
 
-    std::string filename_seihr = "seihr.png";
+    std::string filename_seihr = "seihr_graph.png";
     generate_graph(reactions_seihr, filename_seihr);
 
     auto circadian_system = circadian_oscillator();
     auto const& reactions_circadian = circadian_system.getReactions();
 
-    std::string filename_circadian = "circadian.png";
+    std::string filename_circadian = "circadian_graph.png";
     generate_graph(reactions_circadian, filename_circadian);
+
+    auto simple_system = simple();
+    auto const& reactions_simple = simple_system.getReactions();
+
+    std::string filename_simple = "simple_graph.png";
+    generate_graph(reactions_simple, filename_simple);
 }
 
 void plot_circadian() {
     auto circadian_system = circadian_oscillator();
-
-    std::vector<double> timePoints_circadian;
-    std::map<Species, std::vector<double>> speciesQuantities_circadian;
-
-    auto monitor_circadian = [&timePoints_circadian, &speciesQuantities_circadian](const System& system, double t) {
-        const auto& species = system.getSpecies();
-
-        // Store the time point
-        timePoints_circadian.push_back(t);
-
-        // Store the quantity of each species
-        for (const auto& [speciesName, quantity] : species) {
-            speciesQuantities_circadian[speciesName].push_back(quantity);
-        }
-    };
-
-    auto ips_circadian = make_ips_counter(monitor_circadian);
+    auto trajectoryMonitor = SpeciesTrajectoryMonitor();
+    auto ips_circadian = make_ips_counter(trajectoryMonitor);
 
     std::cout << "Simulating Circadian Rhythm..." << std::endl;
     auto s_circadian = Simulator(circadian_system, 100);
-    s_circadian.simulate(monitor_circadian);
+    s_circadian.simulate(ips_circadian);
 
-    plot_t plot_circadian = plot_t("Trajectory of Circadian Rhythm", 800, 800);
-    for (const auto& [species, quantities] : speciesQuantities_circadian) {
+    auto plot = plot_t("Trajectory of Circadian Rhythm", "Time, hours", "Count", 1920, 1080);
+    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
         std::string speciesName = species.getName();
 
         if (speciesName == "C" || speciesName == "A" || speciesName == "R") {
-            plot_circadian.lines(speciesName, timePoints_circadian, quantities);
+            plot.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
         }
     }
 
-    plot_circadian.process();
+    plot.process();
+    plot.save_to_png("circadian.png");
 }
 
 void plot_seihr() {
     auto seihr_system = seihr(10'000); // 589'755 for DK_NJ
-
-    std::vector<double> timePoints_seihr;
-    std::map<Species, std::vector<double>> speciesQuantities_seihr;
-
-    auto monitor_seihr = [&timePoints_seihr, &speciesQuantities_seihr](const System& system, double t) {
-        const auto& species = system.getSpecies();
-
-        // Store the time point
-        timePoints_seihr.push_back(t);
-
-        // Store the quantity of each species
-        for (const auto& [speciesName, quantity] : species) {
-            speciesQuantities_seihr[speciesName].push_back(quantity);
-        }
-    };
-
-    auto ips_seihr_species_monitor = make_ips_counter(monitor_seihr);
+    auto trajectoryMonitor = SpeciesTrajectoryMonitor();
+    auto ips_seihr_species_monitor = make_ips_counter(trajectoryMonitor);
 
     std::cout << "Simulating SEIHR..." << std::endl;
     auto s_seihr = Simulator(seihr_system, 100);
     s_seihr.simulate(ips_seihr_species_monitor);
 
-    plot_t plot_seihr = plot_t("Trajectory of SEIHR", 800, 800);
-    for (const auto& [species, quantities] : speciesQuantities_seihr) {
+    auto plot = plot_t("Trajectory of SEIHR (N=10'000, rate=0.001)", "Time, days", "Count", 1920, 1080);
+    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
         std::string speciesName = species.getName();
 
         if (speciesName == "H") {
             std::vector<double> transformedQuantities;
             std::transform(quantities.begin(), quantities.end(), std::back_inserter(transformedQuantities), [](double quantity) { return quantity * 1000; });
-            plot_seihr.lines(speciesName + "*1000", timePoints_seihr, transformedQuantities);
+
+            plot.lines(speciesName + "*1000", trajectoryMonitor.getTimePoints(), transformedQuantities);
         } else {
-            plot_seihr.lines(speciesName, timePoints_seihr, quantities);
+            plot.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
         }
     }
 
-    plot_seihr.process();
+    plot.process();
+    plot.save_to_png("seihr.png");
 }
 
 
 void plot_simple() {
     auto simple_system = simple();
-
-    std::vector<double> timePoints;
-    std::map<Species, std::vector<double>> speciesQuantities;
-
-    auto monitor = [&timePoints, &speciesQuantities](const System& system, double t) {
-        const auto& species = system.getSpecies();
-
-        // Store the time point
-        timePoints.push_back(t);
-
-        // Store the quantity of each species
-        for (const auto& [speciesName, quantity] : species) {
-            speciesQuantities[speciesName].push_back(quantity);
-        }
-    };
-
-    auto ips_species_monitor = make_ips_counter(monitor);
+    auto trajectoryMonitor = SpeciesTrajectoryMonitor();
+    auto ips_species_monitor = make_ips_counter(trajectoryMonitor);
 
     std::cout << "Simulating Simple..." << std::endl;
     auto s_simple = Simulator(simple_system, 100'000);
     s_simple.simulate(ips_species_monitor);
 
-    plot_t plot_simple = plot_t("Trajectory of Simple", 800, 800);
-    for (const auto& [species, quantities] : speciesQuantities) {
+    auto plot_simple = plot_t("Trajectory of Simple (A=100, B=0, C=2)", "Time", "Count", 1920, 1080);
+    for (const auto& [species, quantities] : trajectoryMonitor.getSpeciesQuantities()) {
         std::string speciesName = species.getName();
 
-        plot_simple.lines(speciesName, timePoints, quantities);
+        plot_simple.lines(speciesName, trajectoryMonitor.getTimePoints(), quantities);
     }
 
     plot_simple.process();
+    plot_simple.save_to_png("simple.png");
 }
 
 int main(int argc, char const *argv[])
 {
+    make_graphs();
     plot_simple();
+    plot_circadian();
+    plot_seihr();
 }
