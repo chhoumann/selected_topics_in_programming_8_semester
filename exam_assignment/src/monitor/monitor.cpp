@@ -35,25 +35,23 @@ private:
     std::map<Species, std::vector<double>> speciesQuantities;
 };
 
-class IPSCounterMonitor : public Monitor {
+class SpeciesPeakMonitor : public Monitor {
 public:
-    explicit IPSCounterMonitor(std::function<void(const System&, double)> func) : func(std::move(func)) {}
+    std::shared_ptr<double> speciesPeak = std::make_shared<double>(0.0);
+
+    SpeciesPeakMonitor(const std::string& targetSpeciesName) : targetSpeciesName(targetSpeciesName) {}
 
     void operator()(const System& system, double t) override {
-        static auto lastSecond = std::chrono::steady_clock::now();
-        static int iterations = 0;
+        const auto& allSpecies = system.getSpecies();
 
-        func(system, t);
-        iterations++;
-
-        auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::seconds>(now - lastSecond).count() >= 1) {
-            std::cout << "Iterations per second: " << iterations / 1000 << "k" << '\n';
-            iterations = 0;
-            lastSecond = now;
+        for (const auto& [species, quantity] : allSpecies) {
+            if (species.getName() == targetSpeciesName && quantity > *speciesPeak) {
+                *speciesPeak = quantity;
+            }
         }
     }
 
 private:
-    std::function<void(const System&, double)> func;
+    std::string targetSpeciesName;
 };
+
