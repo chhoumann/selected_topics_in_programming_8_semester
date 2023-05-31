@@ -80,7 +80,6 @@ void plot_t::process()
     ch->setTitle(title.c_str());
     ch->createDefaultAxes();
     ch->setDropShadowEnabled(false);
-    // chart()->setAnimationOptions(QChart::SeriesAnimations); // cool but distracting
 
     if (!ch->axes(Qt::Vertical).isEmpty())
         ch->axes(Qt::Vertical).first()->setTitleText(y_axis_label.c_str());
