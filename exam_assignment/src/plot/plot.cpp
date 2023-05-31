@@ -32,8 +32,8 @@ public:
     ~chart_t() noexcept {}
 };
 
-plot_t::plot_t(std::string title, int width, int height):
-        title{std::move(title)}, app{std::make_unique<app_t>()}, chart{std::make_unique<chart_t>()}
+plot_t::plot_t(std::string title, std::string x_axis_label, std::string y_axis_label, int width, int height):
+        title{std::move(title)}, app{std::make_unique<app_t>()}, chart{std::make_unique<chart_t>()}, x_axis_label{std::move(x_axis_label)}, y_axis_label{std::move(y_axis_label)}
 {
     app->window.setCentralWidget(chart.get());
     app->window.setWindowTitle(this->title.c_str());
@@ -42,6 +42,16 @@ plot_t::plot_t(std::string title, int width, int height):
 }
 
 plot_t::~plot_t() noexcept = default;
+
+void plot_t::save_to_png(const std::string& filename)
+{
+    auto* ch = chart->chart();
+    QPixmap pixmap(chart->size());
+    pixmap.fill(Qt::white);
+    QPainter painter(&pixmap);
+    chart->render(&painter);
+    pixmap.save(QString::fromStdString(filename), "PNG");
+}
 
 template <typename Series, typename Chart>
 void add_xy(Chart& chart, const std::string& name, const std::vector<double>& x, const std::vector<double>& y)
@@ -71,6 +81,11 @@ void plot_t::process()
     ch->createDefaultAxes();
     ch->setDropShadowEnabled(false);
     // chart()->setAnimationOptions(QChart::SeriesAnimations); // cool but distracting
+
+    if (!ch->axes(Qt::Vertical).isEmpty())
+        ch->axes(Qt::Vertical).first()->setTitleText(y_axis_label.c_str());
+    if (!ch->axes(Qt::Horizontal).isEmpty())
+        ch->axes(Qt::Horizontal).first()->setTitleText(x_axis_label.c_str());
 
     ch->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
     ch->legend()->setAlignment(Qt::AlignBottom);
