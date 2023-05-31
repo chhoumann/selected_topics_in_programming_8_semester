@@ -1,16 +1,16 @@
+#include <iostream>
+#include <tuple>
+
 #include "types.cpp"
-#include "examples/seihr.cpp"
 #include "graph_generator.cpp"
 #include "stochastic_simulator.cpp"
-#include "examples/circadian_oscillator.cpp"
-#include "examples/simple.cpp"
 #include "plot/plot.cpp"
-#include <iostream>
-#include <functional>
-#include <memory>
-#include <tuple>
 #include "monitor/monitor.cpp"
 #include "thread_pool.cpp"
+
+#include "examples/seihr.cpp"
+#include "examples/circadian_oscillator.cpp"
+#include "examples/simple.cpp"
 
 template <typename Func>
 auto make_ips_counter(Func& func) {
@@ -119,7 +119,7 @@ void plot_simple() {
     plot_simple.save_to_png("simple.png");
 }
 
-double run_simulation(int N) {
+double run_seihr_simulation(int N) {
     auto seihr_system = seihr(N);
 
     auto s_seihr = Simulator(seihr_system, 100);
@@ -143,8 +143,8 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
     std::vector<std::future<double>> futures_dk;
 
     for(int i = 0; i < num_simulations; ++i) {
-        futures_nj.push_back(thread_pool.enqueue(run_simulation, N_NJ));
-        futures_dk.push_back(thread_pool.enqueue(run_simulation, N_DK));
+        futures_nj.push_back(thread_pool.enqueue(run_seihr_simulation, N_NJ));
+        futures_dk.push_back(thread_pool.enqueue(run_seihr_simulation, N_DK));
     }
 
     std::vector<double> results_nj;
