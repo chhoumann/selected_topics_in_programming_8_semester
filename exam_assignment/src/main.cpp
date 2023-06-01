@@ -171,6 +171,113 @@ void peak_seihr(int num_simulations, size_t concurrency_level) {
     std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak_dk << std::endl;
 }
 
+// returns time in milliseconds
+double time_simulation() {
+    auto seihr_system = seihr(10'000);
+
+    auto s_seihr = Simulator(seihr_system, 100);
+    auto emptyLambda = [](const auto&, const auto&){};
+
+    auto begin = std::chrono::steady_clock::now();
+    s_seihr.simulate(emptyLambda);
+    auto end = std::chrono::steady_clock::now();
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+}
+
+void benchmark_plot() {
+    std::vector<size_t> num_simulations = { 10, 100, 1000, 10000 };
+    std::vector<size_t> concurrency_levels = { 1, 3, 5, 10, 12, 15, 20 };
+
+    // (Concurrency level -> (Num simulations -> average time))
+    std::map<size_t, std::map<size_t, double>> averages;
+
+    // (Concurrency level -> (Num simulations -> total time))
+    std::map<size_t, std::map<size_t, double>> avg_totals;
+
+    for (auto concurrency_level : concurrency_levels) {
+        for (auto num_simulation : num_simulations) {
+            std::vector<double> avg_results;
+            std::vector<double> totals;
+
+            for (int repeat = 0; repeat < 5; ++repeat) {
+                ThreadPool tp(concurrency_level);
+                std::vector<std::future<double>> futures;
+
+                for (int i = 0; i < num_simulation; ++i) {
+                    futures.push_back(tp.enqueue(time_simulation));
+                }
+
+                std::vector<double> results;
+
+                for (auto &f : futures) {
+                    results.push_back(f.get());
+                }
+
+                // Calculate average for each sim run
+                double average = std::accumulate(results.begin(), results.end(), 0.0) / results.size();
+                avg_results.push_back(average);
+
+                // Calculate total for sim run & convert to seconds
+                double total = std::accumulate(results.begin(), results.end(), 0.0) / 1000;
+                totals.push_back(total);
+            }
+
+            // Add average of averages to the averages map
+            averages[concurrency_level][num_simulation] = std::accumulate(avg_results.begin(), avg_results.end(), 0.0) / avg_results.size();
+            std::cout << "Average time for " << num_simulation << " w. CL " << concurrency_level << " = " << averages[concurrency_level][num_simulation] << "ms" << std::endl;
+
+            // Add average of totals to the totals map
+            avg_totals[concurrency_level][num_simulation] = std::accumulate(totals.begin(), totals.end(), 0.0) / totals.size();
+            std::cout << "Total time for " << num_simulation << " w. CL " << concurrency_level << " = " << avg_totals[concurrency_level][num_simulation] << "s" << std::endl;
+        }
+
+        std::cout << "Done with concurrency level " << concurrency_level << "." << std::endl;
+    }
+
+    // Here you would plot_avg the results from the averages map.
+    // The implementation would depend on how you are plotting in your environment.
+    plot_t plot_avg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
+
+    for (const auto& [concurrency_level, results] : averages) {
+        // Convert map keys (num_simulations) and values (average times) to vectors
+        std::vector<double> x(results.size()), y(results.size());
+        size_t i = 0;
+        for (const auto& [num_simulation, avg_time] : results) {
+            x[i] = static_cast<double>(num_simulation);
+            y[i] = avg_time;
+            ++i;
+        }
+
+        // Add line to plot_avg
+        plot_avg.lines("Threads: " + std::to_string(concurrency_level), x, y);
+    }
+
+    // Process and save the plot_avg
+    plot_avg.process();
+    plot_avg.save_to_png("avg_sim_benchmark_results.png");
+
+    plot_t plot_total("Benchmark Results - Totals", "Simulations", "Total Sim Time (s) - avg. of n * 5", 1920, 1080);
+
+    for (const auto& [concurrency_level, results] : avg_totals) {
+        // Convert map keys (num_simulations) and values (average times) to vectors
+        std::vector<double> x(results.size()), y(results.size());
+        size_t i = 0;
+        for (const auto& [num_simulation, t_time] : results) {
+            x[i] = static_cast<double>(num_simulation);
+            y[i] = t_time;
+            ++i;
+        }
+
+        // Add line to plot_avg
+        plot_total.lines("Threads: " + std::to_string(concurrency_level), x, y);
+    }
+
+    // Process and save the plot_avg
+    plot_total.process();
+    plot_total.save_to_png("total_sim_benchmark_results.png");
+}
+
 int main(int argc, char const *argv[])
 {
     //make_graphs();
@@ -178,4 +285,5 @@ int main(int argc, char const *argv[])
     //plot_circadian();
     //plot_seihr();
     //peak_seihr(100, 20);
+    benchmark_plot();
 }
