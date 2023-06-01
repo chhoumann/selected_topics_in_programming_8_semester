@@ -187,7 +187,7 @@ double time_simulation() {
 
 void benchmark_plot() {
     std::vector<size_t> num_simulations = { 10, 100, 1000, 10000 };
-    std::vector<size_t> concurrency_levels = { 1, 3, 5, 10, 12, 15, 20 };
+    std::vector<size_t> concurrency_levels = { 1, 6, 12, 18 };
 
     // (Concurrency level -> (Num simulations -> average time))
     std::map<size_t, std::map<size_t, double>> averages;
@@ -201,6 +201,8 @@ void benchmark_plot() {
             std::vector<double> totals;
 
             for (int repeat = 0; repeat < 5; ++repeat) {
+                auto begin_total = std::chrono::steady_clock::now();
+
                 ThreadPool tp(concurrency_level);
                 std::vector<std::future<double>> futures;
 
@@ -214,12 +216,14 @@ void benchmark_plot() {
                     results.push_back(f.get());
                 }
 
+                auto end_total = std::chrono::steady_clock::now();
+
                 // Calculate average for each sim run
                 double average = std::accumulate(results.begin(), results.end(), 0.0) / results.size();
                 avg_results.push_back(average);
 
                 // Calculate total for sim run & convert to seconds
-                double total = std::accumulate(results.begin(), results.end(), 0.0) / 1000;
+                auto total = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - begin_total).count() / 1000;
                 totals.push_back(total);
             }
 
