@@ -235,8 +235,6 @@ void benchmark_plot() {
         std::cout << "Done with concurrency level " << concurrency_level << "." << std::endl;
     }
 
-    // Here you would plot_avg the results from the averages map.
-    // The implementation would depend on how you are plotting in your environment.
     plot_t plot_avg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
 
     for (const auto& [concurrency_level, results] : averages) {
@@ -249,18 +247,16 @@ void benchmark_plot() {
             ++i;
         }
 
-        // Add line to plot_avg
         plot_avg.lines("Threads: " + std::to_string(concurrency_level), x, y);
     }
 
-    // Process and save the plot_avg
     plot_avg.process();
     plot_avg.save_to_png("avg_sim_benchmark_results.png");
 
     plot_t plot_total("Benchmark Results - Totals", "Simulations", "Total Sim Time (s) - avg. of n * 5", 1920, 1080);
 
     for (const auto& [concurrency_level, results] : avg_totals) {
-        // Convert map keys (num_simulations) and values (average times) to vectors
+        // Convert map keys (num_simulations) and values (total times) to vectors
         std::vector<double> x(results.size()), y(results.size());
         size_t i = 0;
         for (const auto& [num_simulation, t_time] : results) {
@@ -269,11 +265,9 @@ void benchmark_plot() {
             ++i;
         }
 
-        // Add line to plot_avg
         plot_total.lines("Threads: " + std::to_string(concurrency_level), x, y);
     }
 
-    // Process and save the plot_avg
     plot_total.process();
     plot_total.save_to_png("total_sim_benchmark_results.png");
 }
