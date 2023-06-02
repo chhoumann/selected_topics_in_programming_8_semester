@@ -9,7 +9,8 @@
 #include "../thread_pool.h"
 #include "../examples/examples.h"
 #include "../stochastic_simulator.h"
-#include "../monitor/monitors.cpp"
+#include "../monitor/species_peak_monitor.h"
+#include "../monitor/species_trajectory_monitor.h"
 
 double run_seihr_simulation(size_t N);
 

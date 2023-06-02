@@ -4,16 +4,13 @@
 #include "types.h"
 #include "graph_generator.h"
 #include "stochastic_simulator.h"
-#include "monitor/monitor.h"
 #include "plot/plot.hpp"
-#include "thread_pool.h"
 #include "exercises/make_graphs.h"
 #include "exercises/benchmark.h"
 #include "exercises/peak_avg_seihr.h"
 
 #include "examples/examples.h"
-
-#include "monitor/monitors.cpp"
+#include "monitor/species_trajectory_monitor.h"
 
 template <typename Func>
 auto make_ips_counter(Func& func) {
@@ -106,13 +103,12 @@ void plot_simple() {
 
 int main(int argc, char const *argv[])
 {
-    //make_graphs();
     do_benchmarks();
-    //plot_simple();
-    //plot_circadian();
-    //plot_seihr();
-    //calculate_peak_and_avg_seihr(10, 12);
-    //benchmark_plot();
+    make_graphs();
+    plot_simple();
+    plot_circadian();
+    plot_seihr();
+    calculate_peak_and_avg_seihr(10, 12);
 
     return 0;
 }

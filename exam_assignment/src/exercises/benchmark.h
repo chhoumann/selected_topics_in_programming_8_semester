@@ -4,6 +4,7 @@
 #include "../examples/examples.h"
 #include "../plot/plot.hpp"
 #include "../stochastic_simulator.h"
+#include "../thread_pool.h"
 #include <chrono>
 #include <vector>
 #include <future>

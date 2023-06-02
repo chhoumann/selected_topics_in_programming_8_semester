@@ -104,7 +104,7 @@ void do_benchmarks() {
         s_seihr.simulate(emptyLambda);
     };
 
-    Benchmark benchmark({10, 100, 1000, 10000}, {1, 6, 12, 18}, task);
+    Benchmark benchmark({10, 20, 30, 40, 50}, {1, 2, 3, 4, 5}, task);
     benchmark.Run();
 
     BenchmarkPlotter plotAvg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
