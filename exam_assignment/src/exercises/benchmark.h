@@ -36,15 +36,15 @@ public:
 
     void Run();
 
-    const LevelSimulationsMap& GetAverages() const;
-    const LevelSimulationsMap& GetTotals() const;
+    const LevelSimulationsMap& GetAverageRuntimes() const;
+    const LevelSimulationsMap& GetTotalRuntimes() const;
 
 private:
     std::vector<size_t> numSimulations_;
     std::vector<size_t> concurrencyLevels_;
     Task task_;
     int numRepeats_;
-    LevelSimulationsMap averages_, avg_totals_;
+    LevelSimulationsMap average_runtimes, average_total_runtimes;
 
     double calculateAverage(const Results& results);
     double runAndTimeTask();

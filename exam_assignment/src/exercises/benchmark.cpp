@@ -42,12 +42,12 @@ void Benchmark::Run() {
     }
 }
 
-const LevelSimulationsMap& Benchmark::GetAverages() const {
-    return averages_;
+const LevelSimulationsMap& Benchmark::GetAverageRuntimes() const {
+    return average_runtimes;
 }
 
-const LevelSimulationsMap& Benchmark::GetTotals() const {
-    return avg_totals_;
+const LevelSimulationsMap& Benchmark::GetTotalRuntimes() const {
+    return average_total_runtimes;
 }
 
 double Benchmark::runAndTimeTask() {
@@ -78,10 +78,10 @@ void Benchmark::performSimulationsAndStoreResults(size_t concurrency_level, size
 
     Results results = performSimulations(concurrency_level, num_simulation);
     double average = calculateAverage(results);
-    addToMapAndLog(concurrency_level, num_simulation, average, averages_, "Average time");
+    addToMapAndLog(concurrency_level, num_simulation, average, average_runtimes, "Average time");
 
     auto total = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_total).count() / 1000;
-    addToMapAndLog(concurrency_level, num_simulation, total, avg_totals_, "Total time");
+    addToMapAndLog(concurrency_level, num_simulation, total, average_total_runtimes, "Total time");
 }
 
 double Benchmark::calculateAverage(const Results& results) {
@@ -108,10 +108,10 @@ void do_benchmarks() {
     benchmark.Run();
 
     BenchmarkPlotter plotAvg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
-    plotAvg.addLine(benchmark.GetAverages());
+    plotAvg.addLine(benchmark.GetAverageRuntimes());
     plotAvg.save("avg_sim_benchmark_results.png");
 
     BenchmarkPlotter plotTotal("Benchmark Results - Totals", "Simulations", "Total Sim Time (s) - avg. of n * 5", 1920, 1080);
-    plotTotal.addLine(benchmark.GetTotals());
+    plotTotal.addLine(benchmark.GetTotalRuntimes());
     plotTotal.save("total_sim_benchmark_results.png");
 }
