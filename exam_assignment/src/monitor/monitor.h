@@ -1,6 +1,8 @@
 #ifndef MONITOR_H
 #define MONITOR_H
 
+#include "../types.h"
+
 class Monitor {
 public:
     virtual ~Monitor() = default;

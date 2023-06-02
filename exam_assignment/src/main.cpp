@@ -4,13 +4,15 @@
 #include "types.h"
 #include "graph_generator.cpp"
 #include "stochastic_simulator.h"
-#include "plot/plot.cpp"
-#include "monitor/monitor.cpp"
+#include "monitor/monitor.h"
+#include "plot/plot.hpp"
 #include "thread_pool.cpp"
 
 #include "examples/seihr.cpp"
 #include "examples/circadian_oscillator.cpp"
 #include "examples/simple.cpp"
+
+#include "monitor/monitors.cpp"
 
 template <typename Func>
 auto make_ips_counter(Func& func) {

@@ -1,7 +1,10 @@
+#include "monitor.h"
+#include "../types.h"
+
 #include <map>
 #include <utility>
 #include <vector>
-#include "monitor.h"
+#include <memory>
 
 class SpeciesTrajectoryMonitor : public Monitor {
 public:
