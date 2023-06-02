@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "types.h"
+#include "monitor/monitor.h"
 
 class Simulator {
 public:

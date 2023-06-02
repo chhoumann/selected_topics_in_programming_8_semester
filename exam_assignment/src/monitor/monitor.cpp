@@ -1,13 +1,7 @@
 #include <map>
 #include <utility>
 #include <vector>
-
-class Monitor {
-public:
-    virtual ~Monitor() = default;
-
-    virtual void operator()(const System& system, double t) = 0;
-};
+#include "monitor.h"
 
 class SpeciesTrajectoryMonitor : public Monitor {
 public:
