@@ -6,9 +6,10 @@
 #include "stochastic_simulator.h"
 #include "monitor/monitor.h"
 #include "plot/plot.hpp"
-#include "thread_pool.cpp"
+#include "thread_pool.h"
 #include "exercises/make_graphs.h"
-#include "exercises/benchmark.cpp"
+#include "exercises/benchmark.h"
+#include "exercises/peak_avg_seihr.h"
 
 #include "examples/examples.h"
 
@@ -102,63 +103,6 @@ void plot_simple() {
     plot_simple.save_to_png("simple.png");
 }
 
-double run_seihr_simulation(size_t N) {
-    auto seihr_system = seihr(N);
-
-    auto s_seihr = Simulator(seihr_system, 100);
-    auto h_mon = SpeciesPeakMonitor("H");
-
-    s_seihr.simulate(h_mon);
-
-    return *h_mon.speciesPeak;
-}
-
-template <typename Func>
-void perform_simulation(const size_t N, const size_t num_simulations, ThreadPool& thread_pool, Func operate_on_results) {
-    std::vector<std::future<double>> futures;
-    std::vector<double> results;
-
-    for(int i = 0; i < num_simulations; ++i) {
-        futures.push_back(thread_pool.enqueue(run_seihr_simulation, N));
-    }
-
-    for(auto &f : futures) {
-        results.push_back(f.get());
-    }
-
-    operate_on_results(results);
-}
-double calculate_mean(const std::vector<double>& xs) {
-    return std::accumulate(xs.begin(), xs.end(), 0.0) / xs.size();
-}
-
-double calculate_peak(const std::vector<double>& xs) {
-    return *std::max_element(xs.begin(), xs.end());
-}
-
-void peak_avg_seihr(size_t num_simulations, size_t concurrency_level) {
-    auto begin = std::chrono::steady_clock::now();
-    const size_t N_NJ = 589'755;
-    const size_t N_DK = 5'882'763;
-
-    std::cout << "Simulating SEIHR..." << std::endl;
-
-    ThreadPool thread_pool(concurrency_level);
-
-    perform_simulation(N_NJ, num_simulations, thread_pool, [&](std::vector<double> const& results) {
-        double avg_peak = calculate_mean(results);
-        std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak << std::endl;
-    });
-
-    perform_simulation(N_DK, num_simulations, thread_pool, [&](std::vector<double> const& results) {
-        double max_peak = calculate_peak(results);
-        std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak << std::endl;
-    });
-
-    auto end = std::chrono::steady_clock::now();
-    std::cout << "Time elapsed for " << num_simulations << " w. CL " << concurrency_level << " = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "ms" << std::endl;
-}
-
 
 int main(int argc, char const *argv[])
 {
@@ -167,7 +111,7 @@ int main(int argc, char const *argv[])
     //plot_simple();
     //plot_circadian();
     //plot_seihr();
-    //peak_avg_seihr(10, 12);
+    //calculate_peak_and_avg_seihr(10, 12);
     //benchmark_plot();
 
     return 0;
