@@ -1,5 +1,5 @@
 # Add source files here
-set(SOURCES main.cpp)
+set(SOURCES main.cpp types.cpp stochastic_simulator.cpp)
 
 # Generate executable
 add_executable(${PROJECT_NAME} ${SOURCES})

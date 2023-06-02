@@ -1,7 +1,7 @@
 #include <iostream>
 #include <tuple>
 
-#include "types.cpp"
+#include "types.h"
 #include "graph_generator.cpp"
 #include "stochastic_simulator.cpp"
 #include "plot/plot.cpp"

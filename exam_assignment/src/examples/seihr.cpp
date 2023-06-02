@@ -1,4 +1,4 @@
-#include "../types.cpp"
+#include "../types.h"
 #include <cmath>
 
 System seihr(uint32_t N)

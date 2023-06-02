@@ -1,73 +1,49 @@
-#ifndef TYPES
-#define TYPES
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-#include <stdexcept>
-#include <iostream>
+#include "types.h"
 
-class Species
-{
-public:
-    explicit Species(std::string name) : _name(std::move(name)) {}
+Species::Species(std::string name) : _name(std::move(name)) {}
 
-    [[nodiscard]] const std::string &getName() const { return _name; }
+const std::string &Species::getName() const {
+    return _name;
+}
 
-    // For compatibility with std::map
-    bool operator<(const Species& other) const {
-        return _name < other._name;
-    }
+bool Species::operator<(const Species& other) const {
+    return _name < other._name;
+}
 
-private:
-    std::string _name;
-};
-
-std::vector<Species> operator+(const Species &lhs, const Species &rhs)
-{
+std::vector<Species> operator+(const Species &lhs, const Species &rhs) {
     return {lhs, rhs};
 }
 
-class Reaction
-{
-public:
-    std::vector<Species> reactants = {};
-    std::vector<Species> products = {};
+Reaction::Reaction(Reaction &&other, double rate) : reactants(std::move(other.reactants)),
+                                                    products(std::move(other.products)), rate_(rate), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
 
-    double rate() const { return rate_; }
-    double delay() const { return delay_; }
+Reaction::Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
 
-    void setDelay(double delay) { delay_ = delay; }
+double Reaction::rate() const {
+    return rate_;
+}
 
-    std::vector<double> delta_R;
-    std::vector<double> delta_P;
+double Reaction::delay() const {
+    return delay_;
+}
 
-    Reaction(Reaction &&other, double rate) : reactants(std::move(other.reactants)),
-                                               products(std::move(other.products)), rate_(rate), delta_R(std::move(other.delta_R)), delta_P(std::move(other.delta_P)) {}
-    Reaction(std::vector<Species> &&reactants, std::vector<Species> &&products) : reactants(std::move(reactants)), products(std::move(products)) {}
+void Reaction::setDelay(double delay) {
+    delay_ = delay;
+}
 
-private:
-    double rate_;
-    double delay_;
-};
-
-Reaction operator>>=(const Species &reactant, const Species &product)
-{
+Reaction operator>>=(const Species &reactant, const Species &product) {
     return Reaction({reactant}, {product});
 }
 
-Reaction operator>>=(std::vector<Species> &&reactants, const Species &product)
-{
+Reaction operator>>=(std::vector<Species> &&reactants, const Species &product) {
     return Reaction(std::move(reactants), {product});
 }
 
-Reaction operator>>=(const Species &reactant, std::vector<Species> &&products)
-{
+Reaction operator>>=(const Species &reactant, std::vector<Species> &&products) {
     return Reaction({reactant}, std::move(products));
 }
 
-Reaction operator>>=(std::vector<Species> &&reactants, std::vector<Species> &&products)
-{
+Reaction operator>>=(std::vector<Species> &&reactants, std::vector<Species> &&products) {
     return Reaction(std::move(reactants), std::move(products));
 }
 
@@ -87,83 +63,67 @@ std::ostream& operator<<(std::ostream& os, const Reaction& reaction) {
     return os;
 }
 
-struct ReactionHash {
-    std::size_t operator()(const Reaction& r) const {
-        std::size_t h = 0;
+std::size_t ReactionHash::operator()(const Reaction& r) const {
+    std::size_t h = 0;
 
-        for (auto& s : r.reactants) {
-            h ^= std::hash<std::string>{}(s.getName());
-        }
-        for (auto& s : r.products) {
-            h ^= std::hash<std::string>{}(s.getName());
-        }
-
-        h ^= std::hash<double>{}(r.rate());
-
-        return h;
+    for (auto& s : r.reactants) {
+        h ^= std::hash<std::string>{}(s.getName());
     }
-};
+    for (auto& s : r.products) {
+        h ^= std::hash<std::string>{}(s.getName());
+    }
+
+    h ^= std::hash<double>{}(r.rate());
+
+    return h;
+}
 
 bool operator==(const Reaction& lhs, const Reaction& rhs) {
     ReactionHash hash;
-
     return hash(lhs) == hash(rhs);
 }
 
-class System
-{
-public:
-    [[nodiscard]] const std::map<Species, int> &getSpecies() const { return species; }
-    [[nodiscard]] std::vector<Reaction> &getReactions() { return reactions; }
+const std::map<Species, int> &System::getSpecies() const {
+    return species;
+}
 
-    Species operator()(const std::string &name, double amount)
-    {
-        if (species.contains(Species(name)))
-        {
-            throw std::runtime_error("Species already exists");
-        }
+std::vector<Reaction> &System::getReactions() {
+    return reactions;
+}
 
-        auto s = Species(name);
-        species.try_emplace(s, amount);
-
-        return s;
+Species System::operator()(const std::string &name, double amount) {
+    if (species.contains(Species(name))) {
+        throw std::runtime_error("Species already exists");
     }
 
-    Reaction operator()(Reaction &&r, double rate)
-    {
-        auto re = Reaction(std::move(r), rate);
+    auto s = Species(name);
+    species.try_emplace(s, amount);
 
-        reactions.push_back(re);
+    return s;
+}
 
-        return re;
+Reaction System::operator()(Reaction &&r, double rate) {
+    auto re = Reaction(std::move(r), rate);
+    reactions.push_back(re);
+    return re;
+}
+
+Species System::environment() {
+    const std::string environment = "environment";
+    return (*this)(environment, 0.0);
+}
+
+int System::amount(const Species &s) const {
+    if (!species.contains(s)) {
+        auto name = s.getName();
+        throw std::runtime_error("Species '" + name + "' does not exist");
     }
+    return species.at(s);
+}
 
-    /// @brief Assuming the environment means we don't care to track the species
-    /// @return Untracked species
-    Species environment()
-    {
-        const std::string environment = "environment";
-        return (*this)(environment, 0.0);
+void System::setAmount(const Species &s, int amount) {
+    if (!species.contains(s)) {
+        throw std::runtime_error("Species does not exist");
     }
-
-    int amount(const Species &s) const {
-        if (!species.contains(s)) {
-            auto name = s.getName();
-            throw std::runtime_error("Species '" + name + "' does not exist");
-        }
-
-        return species.at(s);
-    }
-
-    void setAmount(const Species &s, int amount) {
-        if (!species.contains(s)) {
-            throw std::runtime_error("Species does not exist");
-        }
-
-        species[s] = amount;
-    }
-private:
-    std::map<Species, int> species = {};
-    std::vector<Reaction> reactions = {};
-};
-#endif
+    species[s] = amount;
+}

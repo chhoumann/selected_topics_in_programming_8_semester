@@ -1,4 +1,4 @@
-#include "types.cpp"
+#include "types.h"
 #include <graphviz/gvc.h> // ensure that graphviz is installed - sudo apt install libgraphviz-dev
 #include <iomanip>
 #include <cmath>

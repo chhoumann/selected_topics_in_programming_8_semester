@@ -1,4 +1,4 @@
-#include "../types.cpp"
+#include "../types.h"
 
 System circadian_oscillator()
 {
