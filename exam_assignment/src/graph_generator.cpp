@@ -35,7 +35,6 @@ void generate_graph(const std::vector<Reaction> &reactions, const std::string &f
     int delayCount = 0;
     for (const auto &reaction : reactions)
     {
-        // rate node
         std::stringstream ss;
         ss << "delay_" << delayCount++;
         auto delay_name = ss.str();
