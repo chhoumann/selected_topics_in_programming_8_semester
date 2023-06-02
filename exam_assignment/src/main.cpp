@@ -285,5 +285,5 @@ int main(int argc, char const *argv[])
     //plot_circadian();
     //plot_seihr();
     //peak_seihr(100, 20);
-    benchmark_plot();
+    //benchmark_plot();
 }
