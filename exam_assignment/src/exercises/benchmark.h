@@ -1,0 +1,59 @@
+#ifndef BENCHMARK_H
+#define BENCHMARK_H
+
+#include "../examples/seihr.cpp"
+#include "../thread_pool.cpp"
+#include "../plot/plot.hpp"
+#include "../stochastic_simulator.h"
+#include <chrono>
+#include <vector>
+#include <future>
+#include <map>
+#include <functional>
+#include <string>
+
+using LevelSimulationsMap = std::map<size_t, std::map<size_t, double>>;
+using Results = std::vector<double>;
+
+class BenchmarkPlotter {
+public:
+    BenchmarkPlotter(const std::string& title, const std::string& xlabel, const std::string& ylabel, int width, int height);
+    void addLine(const LevelSimulationsMap& data);
+    void save(const std::string& filename);
+
+private:
+    plot_t plot_;
+};
+
+class Benchmark {
+public:
+    using Task = std::function<void()>;
+
+    Benchmark(
+            const std::vector<size_t>& numSimulations,
+            const std::vector<size_t>& concurrencyLevels,
+            Task task,
+            int numRepeats = 5);
+
+    void Run();
+
+    const LevelSimulationsMap& GetAverages() const;
+    const LevelSimulationsMap& GetTotals() const;
+
+private:
+    std::vector<size_t> numSimulations_;
+    std::vector<size_t> concurrencyLevels_;
+    Task task_;
+    int numRepeats_;
+    LevelSimulationsMap averages_, avg_totals_;
+
+    double calculateAverage(const Results& results);
+    double runAndTimeTask();
+    Results performSimulations(size_t concurrency_level, size_t num_simulation);
+    void performSimulationsAndStoreResults(size_t concurrency_level, size_t num_simulation);
+    void addToMapAndLog(size_t concurrency_level, size_t num_simulations, double average, LevelSimulationsMap& map, const std::string& description);
+};
+
+void do_benchmarks();
+
+#endif //BENCHMARK_H

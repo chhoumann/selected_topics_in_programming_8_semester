@@ -10,9 +10,7 @@
 #include "exercises/make_graphs.h"
 //#include "exercises/benchmark.cpp"
 
-#include "examples/seihr.cpp"
-#include "examples/circadian_oscillator.cpp"
-#include "examples/simple.cpp"
+#include "examples/examples.h"
 
 #include "monitor/monitors.cpp"
 
@@ -164,11 +162,13 @@ void peak_avg_seihr(size_t num_simulations, size_t concurrency_level) {
 
 int main(int argc, char const *argv[])
 {
-    make_graphs();
+    //make_graphs();
     //do_benchmarks();
     //plot_simple();
     //plot_circadian();
     //plot_seihr();
     //peak_avg_seihr(10, 12);
     //benchmark_plot();
+
+    return 0;
 }

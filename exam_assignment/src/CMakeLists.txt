@@ -1,5 +1,5 @@
 # Add source files here
-set(SOURCES main.cpp types.cpp stochastic_simulator.cpp monitor/monitors.cpp plot/plot.cpp exercises/make_graphs.h exercises/benchmark.h graph_generator.h)
+set(SOURCES main.cpp types.cpp stochastic_simulator.cpp monitor/monitors.cpp plot/plot.cpp graph_generator.h exercises/make_graphs.h exercises/benchmark.h examples/circadian_oscillator.cpp examples/seihr.cpp examples/simple.cpp)
 
 # Generate executable
 add_executable(${PROJECT_NAME} ${SOURCES})
