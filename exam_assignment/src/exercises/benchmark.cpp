@@ -1,4 +1,5 @@
 #include "benchmark.h"
+
 BenchmarkPlotter::BenchmarkPlotter(const std::string& title, const std::string& xlabel, const std::string& ylabel, int width, int height)
         : plot_(title, xlabel, ylabel, width, height) {}
 

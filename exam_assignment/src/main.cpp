@@ -8,7 +8,7 @@
 #include "plot/plot.hpp"
 #include "thread_pool.cpp"
 #include "exercises/make_graphs.h"
-//#include "exercises/benchmark.cpp"
+#include "exercises/benchmark.cpp"
 
 #include "examples/examples.h"
 
@@ -163,7 +163,7 @@ void peak_avg_seihr(size_t num_simulations, size_t concurrency_level) {
 int main(int argc, char const *argv[])
 {
     //make_graphs();
-    //do_benchmarks();
+    do_benchmarks();
     //plot_simple();
     //plot_circadian();
     //plot_seihr();

@@ -1,8 +1,7 @@
 #ifndef BENCHMARK_H
 #define BENCHMARK_H
 
-#include "../examples/seihr.cpp"
-#include "../thread_pool.cpp"
+#include "../examples/examples.h"
 #include "../plot/plot.hpp"
 #include "../stochastic_simulator.h"
 #include <chrono>
