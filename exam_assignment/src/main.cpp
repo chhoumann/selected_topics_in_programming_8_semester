@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "graph_generator.cpp"
-#include "stochastic_simulator.cpp"
+#include "stochastic_simulator.h"
 #include "plot/plot.cpp"
 #include "monitor/monitor.cpp"
 #include "thread_pool.cpp"
