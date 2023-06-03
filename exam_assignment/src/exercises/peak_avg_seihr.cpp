@@ -1,4 +1,5 @@
 #include "peak_avg_seihr.h"
+#include "../parallel_simulator.h"
 
 double run_seihr_simulation(size_t N) {
     auto seihr_system = seihr(N);
@@ -12,16 +13,17 @@ double run_seihr_simulation(size_t N) {
 }
 
 template <typename Func>
-void perform_parallel_simulations(const size_t N, const size_t num_simulations, ThreadPool& thread_pool, Func operate_on_results) {
-    std::vector<std::future<double>> futures;
+void perform_parallel_simulations(const size_t N, const size_t num_simulations, size_t concurrency_level, Func operate_on_results) {
+    auto system_factory = [&N]() { return seihr(N); };
+    auto monitor_factory = []() { return std::make_unique<SpeciesPeakMonitor>("H"); };
+
+    ParallelSimulator<SpeciesPeakMonitor> parallel_simulator(system_factory, monitor_factory, 100, num_simulations, concurrency_level);
+
+    parallel_simulator.simulate();
+
     std::vector<double> results;
-
-    for(int i = 0; i < num_simulations; ++i) {
-        futures.push_back(thread_pool.enqueue(run_seihr_simulation, N));
-    }
-
-    for(auto &f : futures) {
-        results.push_back(f.get());
+    for (auto& monitor : parallel_simulator.getMonitors()) {
+        results.push_back(*monitor->speciesPeak);
     }
 
     operate_on_results(results);
@@ -44,15 +46,13 @@ void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_lev
 
     std::cout << "Simulating SEIHR..." << std::endl;
 
-    ThreadPool thread_pool(concurrency_level);
-
-    perform_parallel_simulations(N_NJ, num_simulations, thread_pool, [&](std::vector<double> const &results) {
+    perform_parallel_simulations(N_NJ, num_simulations, concurrency_level, [&](std::vector<double> const &results) {
         double avg_peak = calculate_mean(results);
         std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak
                   << std::endl;
     });
 
-    perform_parallel_simulations(N_DK, num_simulations, thread_pool, [&](std::vector<double> const &results) {
+    perform_parallel_simulations(N_DK, num_simulations, concurrency_level, [&](std::vector<double> const &results) {
         double max_peak = calculate_peak(results);
         std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak
                   << std::endl;

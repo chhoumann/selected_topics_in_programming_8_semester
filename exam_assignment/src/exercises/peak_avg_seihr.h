@@ -15,7 +15,7 @@
 double run_seihr_simulation(size_t N);
 
 template <typename Func>
-void perform_parallel_simulations(const size_t N, const size_t num_simulations, ThreadPool& thread_pool, Func operate_on_results);
+void perform_parallel_simulations(const size_t N, const size_t num_simulations, size_t concurrency_level, Func operate_on_results);
 
 double calculate_mean(const std::vector<double>& xs);
 
