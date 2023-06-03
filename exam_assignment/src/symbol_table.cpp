@@ -12,6 +12,10 @@ private:
 
 public:
     void store(const std::string &key, const T &value) {
+        if (table.contains(key)) {
+            throw std::runtime_error("Key already exists in symbol table");
+        }
+
         table[key] = value;
     }
 

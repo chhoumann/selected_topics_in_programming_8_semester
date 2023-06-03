@@ -42,6 +42,17 @@ TEST(SymbolTableTest, LookupThrowsExceptionWhenKeyNotFound) {
     EXPECT_THROW(symbolTable.lookup("A"), std::runtime_error);
 }
 
+TEST(SymbolTableTest, StoreThrowsExceptionWhenKeyFound) {
+    // Arrange
+    SymbolTable<int> symbolTable;
+
+    // Act
+    symbolTable.store("A", 100);
+
+    // Assert
+    EXPECT_THROW(symbolTable.store("A", 100), std::runtime_error);
+}
+
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
