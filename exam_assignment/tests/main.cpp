@@ -53,6 +53,19 @@ TEST(SymbolTableTest, StoreThrowsExceptionWhenKeyFound) {
     EXPECT_THROW(symbolTable.store("A", 100), std::runtime_error);
 }
 
+TEST(SymbolTableTest, Update) {
+    // Arrange
+    SymbolTable<int> symbolTable;
+    int expectedValue = 100;
+
+    // Act
+    symbolTable.store("A", 0);
+    int actualValue = symbolTable.update("A", expectedValue);
+
+    // Assert
+    EXPECT_EQ(actualValue, expectedValue);
+}
+
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

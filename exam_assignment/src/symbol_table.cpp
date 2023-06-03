@@ -26,6 +26,15 @@ public:
             throw std::runtime_error("Key not found in symbol table");
         }
     }
+
+    T update(const std::string &key, const T &value) {
+        if (!table.contains(key)) {
+            throw std::runtime_error("Key not found in symbol table");
+        }
+
+        table[key] = value;
+        return value;
+    }
 };
 
 #endif
