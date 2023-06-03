@@ -51,7 +51,7 @@ private:
     double runAndTimeTask();
     Results performSimulations(size_t concurrency_level, size_t num_simulation);
     void performSimulationsAndStoreResults(size_t concurrency_level, size_t num_simulation);
-    void addToMapAndLog(size_t concurrency_level, size_t num_simulations, double average, LevelSimulationsMap& map, const std::string& description);
+    void addResultToMap(size_t concurrency_level, size_t num_simulations, double result, LevelSimulationsMap& map);
 };
 
 void do_benchmarks();

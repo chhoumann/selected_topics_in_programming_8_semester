@@ -34,6 +34,14 @@ Benchmark::Benchmark(
           numRepeats_(numRepeats) {}
 
 void Benchmark::Run() {
+    std::cout << "Benchmarking..." << std::endl;
+
+    std::cout << "Warming up..." << std::endl;
+    for (size_t i = 0; i < 10; ++i) {
+        performSimulations(concurrencyLevels_.at(0), numSimulations_.at(0));
+    }
+
+    std::cout << "Running benchmarks..." << std::endl;
     for (auto concurrency_level : concurrencyLevels_) {
         for (auto num_simulation : numSimulations_) {
             performSimulationsAndStoreResults(concurrency_level, num_simulation);
@@ -79,19 +87,20 @@ void Benchmark::performSimulationsAndStoreResults(size_t concurrency_level, size
 
     Results results = performSimulations(concurrency_level, num_simulation);
     double average = calculateAverage(results);
-    addToMapAndLog(concurrency_level, num_simulation, average, average_runtimes, "Average time");
+    addResultToMap(concurrency_level, num_simulation, average, average_runtimes);
+    std::cout << "Average time" << " for " << num_simulation << " w. CL " << concurrency_level << " = " << average << "ms" << std::endl;
 
     auto total = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_total).count() / 1000;
-    addToMapAndLog(concurrency_level, num_simulation, total, average_total_runtimes, "Total time");
+    addResultToMap(concurrency_level, num_simulation, total, average_total_runtimes);
+    std::cout << "Total time" << " for " << num_simulation << " w. CL " << concurrency_level << " = " << total << "s" << std::endl;
 }
 
 double Benchmark::calculateAverage(const Results& results) {
     return std::accumulate(results.begin(), results.end(), 0.0) / results.size();
 }
 
-void Benchmark::addToMapAndLog(size_t concurrency_level, size_t num_simulation, double average, LevelSimulationsMap& map, const std::string& description) {
-    map[concurrency_level][num_simulation] = average;
-    std::cout << description << " for " << num_simulation << " w. CL " << concurrency_level << " = " << average << std::endl;
+void Benchmark::addResultToMap(size_t concurrency_level, size_t num_simulations, double result, LevelSimulationsMap& map) {
+    map[concurrency_level][num_simulations] = result;
 }
 
 void do_benchmarks() {
@@ -105,7 +114,7 @@ void do_benchmarks() {
         s_seihr.simulate(emptyLambda);
     };
 
-    Benchmark benchmark({10, 20, 30, 40, 50}, {1, 2, 3, 4, 5}, task);
+    Benchmark benchmark({10, 100, 1000, 10'000}, {1, 6, 12, 18}, task);
     benchmark.Run();
 
     {
