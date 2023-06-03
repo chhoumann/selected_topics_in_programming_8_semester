@@ -2,6 +2,8 @@
 #include "../src/types.cpp"
 #include "../src/symbol_table.cpp"
 
+// Solves requirement 9: Implement unit tests (e.g. test symbol table methods and pretty-printing of reaction rules).
+
 TEST(MyTestSuite, TestReactionOstreamOverload) {
     // Arrange
     System s = System();

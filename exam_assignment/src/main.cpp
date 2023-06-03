@@ -143,6 +143,8 @@ int main(int argc, char const *argv[])
     // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
     calculate_peak_and_avg_seihr(100, 12);
 
+    // Solves requirement 10: Benchmark and compare the stochastic simulation performance (e.g. the time it takes to compute 20 simulations
+    // a single core, multiple cores, or improved implementation). Make your conclusions.
     do_benchmarks();
 
     return 0;
