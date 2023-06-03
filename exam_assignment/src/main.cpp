@@ -108,7 +108,7 @@ int main(int argc, char const *argv[])
     plot_simple();
     plot_circadian();
     plot_seihr();
-    calculate_peak_and_avg_seihr(10, 12);
+    calculate_peak_and_avg_seihr(100, 12);
 
     return 0;
 }
