@@ -31,7 +31,6 @@ auto make_ips_counter(Func& func) {
     };
 }
 
-//
 void plot_circadian() {
     auto circadian_system = circadian_oscillator();
     auto trajectoryMonitor = SpeciesTrajectoryMonitor();
@@ -142,7 +141,14 @@ int main(int argc, char const *argv[])
     // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
     // Solution to the second part of requirement 8: Estimate the likely (mean) value of the hospitalized peak over 20 simulations.
     // Except I did it over 100 simulations.
-    calculate_peak_and_avg_seihr(100, 12);
+    const size_t N_NJ = 589755;
+    const size_t N_DK = 5882763;
+
+    std::cout << "SEIHR peak and avg hospitalized agents for North Jutland population size" << std::endl;
+    calculate_peak_and_avg_seihr(100, 12, N_NJ);
+
+    std::cout << "SEIHR peak and avg hospitalized agents for Denmark population size" << std::endl;
+    calculate_peak_and_avg_seihr(100, 12, N_DK);
 
     // Solves requirement 10: Benchmark and compare the stochastic simulation performance (e.g. the time it takes to compute 20 simulations
     // a single core, multiple cores, or improved implementation). Make your conclusions.

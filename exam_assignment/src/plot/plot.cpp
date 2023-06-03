@@ -14,6 +14,7 @@
 
 #include <random>
 #include <algorithm>
+#include <QValueAxis>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -85,6 +86,36 @@ void plot_t::process()
         ch->axes(Qt::Vertical).first()->setTitleText(y_axis_label.c_str());
     if (!ch->axes(Qt::Horizontal).isEmpty())
         ch->axes(Qt::Horizontal).first()->setTitleText(x_axis_label.c_str());
+
+    QFont font = ch->titleFont();
+    font.setPointSize(34); // Set the font size you want for the title
+    ch->setTitleFont(font);
+
+    QValueAxis *axisX = qobject_cast<QValueAxis *>(ch->axes(Qt::Horizontal).first());
+    font = axisX->labelsFont();
+    font.setPointSize(16); // Set the font size you want for the x axis
+    axisX->setLabelsFont(font);
+
+    QValueAxis *axisY = qobject_cast<QValueAxis *>(ch->axes(Qt::Vertical).first());
+    font = axisY->labelsFont();
+    font.setPointSize(16); // Set the font size you want for the y axis
+    axisY->setLabelsFont(font);
+
+    font = ch->legend()->font();
+    font.setPointSize(22); // Set the font size you want for the legend
+    ch->legend()->setFont(font);
+
+    auto* yAxis = ch->axes(Qt::Vertical).first();
+    yAxis->setTitleText(y_axis_label.c_str());
+    QFont fontY = yAxis->titleFont();
+    fontY.setPointSize(22); // change this to increase or decrease the size
+    yAxis->setTitleFont(fontY);
+
+    auto* xAxis = ch->axes(Qt::Horizontal).first();
+    xAxis->setTitleText(x_axis_label.c_str());
+    QFont fontX = xAxis->titleFont();
+    fontX.setPointSize(22); // change this to increase or decrease the size
+    xAxis->setTitleFont(fontX);
 
     ch->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
     ch->legend()->setAlignment(Qt::AlignBottom);

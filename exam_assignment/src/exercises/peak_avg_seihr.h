@@ -21,6 +21,6 @@ double calculate_mean(const std::vector<double>& xs);
 
 double calculate_peak(const std::vector<double>& xs);
 
-void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level);
+void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level, size_t N);
 
 #endif //PEAK_AVG_SEIHR_H

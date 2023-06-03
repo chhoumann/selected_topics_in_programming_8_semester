@@ -39,23 +39,17 @@ double calculate_peak(const std::vector<double>& xs) {
 
 // Solution to second part of requirement 7: Use it to estimate
 // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
-void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level) {
+void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level, size_t N) {
     auto begin = std::chrono::steady_clock::now();
-    const size_t N_NJ = 589755;
-    const size_t N_DK = 5882763;
 
     std::cout << "Simulating SEIHR..." << std::endl;
 
-    perform_parallel_simulations(N_NJ, num_simulations, concurrency_level, [&](std::vector<double> const &results) {
+    perform_parallel_simulations(N, num_simulations, concurrency_level, [&](std::vector<double> const &results) {
         double avg_peak = calculate_mean(results);
-        std::cout << "Average peak of Hospitalized in NJ over " << num_simulations << " simulations: " << avg_peak
-                  << std::endl;
-    });
-
-    perform_parallel_simulations(N_DK, num_simulations, concurrency_level, [&](std::vector<double> const &results) {
         double max_peak = calculate_peak(results);
-        std::cout << "Maximum peak of Hospitalized in DK over " << num_simulations << " simulations: " << max_peak
-                  << std::endl;
+
+        std::cout << "Average peak of Hospitalized over " << num_simulations << " simulations: " << avg_peak << std::endl;
+        std::cout << "Maximum peak of Hospitalized over " << num_simulations << " simulations: " << max_peak << std::endl;
     });
 
     auto end = std::chrono::steady_clock::now();
