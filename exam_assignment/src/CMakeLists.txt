@@ -10,7 +10,7 @@ set(
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Link graphviz
-target_link_libraries(MyProject cgraph gvc Qt5::Charts Qt5::Widgets Qt5::Core)
+target_link_libraries(${PROJECT_NAME} cgraph gvc Qt5::Charts Qt5::Widgets Qt5::Core)
 
 # Set C++ standard to C++20
 set(CMAKE_CXX_STANDARD 20)

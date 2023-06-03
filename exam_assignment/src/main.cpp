@@ -138,10 +138,10 @@ int main(int argc, char const *argv[])
     plot_circadian();
     plot_seihr();
 
-    Solution to second part of requirement 7: Use it to estimate
-    the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
-    Solution to the second part of requirement 8: Estimate the likely (mean) value of the hospitalized peak over 20 simulations.
-    Except I did it over 100 simulations.
+    // Solution to second part of requirement 7: Use it to estimate
+    // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
+    // Solution to the second part of requirement 8: Estimate the likely (mean) value of the hospitalized peak over 20 simulations.
+    // Except I did it over 100 simulations.
     calculate_peak_and_avg_seihr(100, 12);
 
     // Solves requirement 10: Benchmark and compare the stochastic simulation performance (e.g. the time it takes to compute 20 simulations

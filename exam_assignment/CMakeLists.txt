@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
 # Set the project name
-project(MyProject)
+project(StochasticSimulator)
 
 # Set C++ standard to C++20
 set(CMAKE_CXX_STANDARD 20)
