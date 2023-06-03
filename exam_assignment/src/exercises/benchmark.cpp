@@ -5,7 +5,8 @@ BenchmarkPlotter::BenchmarkPlotter(const std::string& title, const std::string& 
 
 void BenchmarkPlotter::addLine(const LevelSimulationsMap& data) {
     for (const auto& [concurrency_level, results] : data) {
-        std::vector<double> x(results.size()), y(results.size());
+        std::vector<double> x(results.size());
+        std::vector<double> y(results.size());
         size_t i = 0;
         for (const auto& [num_simulation, avg_time] : results) {
             x[i] = static_cast<double>(num_simulation);
@@ -107,11 +108,15 @@ void do_benchmarks() {
     Benchmark benchmark({10, 20, 30, 40, 50}, {1, 2, 3, 4, 5}, task);
     benchmark.Run();
 
-    BenchmarkPlotter plotAvg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
-    plotAvg.addLine(benchmark.GetAverageRuntimes());
-    plotAvg.save("avg_sim_benchmark_results.png");
+    {
+        BenchmarkPlotter plotAvg("Benchmark Results - Averages", "Simulations", "Average Sim Time (ms) - avg. of n * 5", 1920, 1080);
+        plotAvg.addLine(benchmark.GetAverageRuntimes());
+        plotAvg.save("avg_sim_benchmark_results.png");
+    }
 
-    BenchmarkPlotter plotTotal("Benchmark Results - Totals", "Simulations", "Total Sim Time (s) - avg. of n * 5", 1920, 1080);
-    plotTotal.addLine(benchmark.GetTotalRuntimes());
-    plotTotal.save("total_sim_benchmark_results.png");
+    {
+        BenchmarkPlotter plotTotal("Benchmark Results - Totals", "Simulations", "Total Sim Time (s) - avg. of n * 5", 1920, 1080);
+        plotTotal.addLine(benchmark.GetTotalRuntimes());
+        plotTotal.save("total_sim_benchmark_results.png");
+    }
 }
