@@ -105,7 +105,7 @@ void Benchmark::addResultToMap(size_t concurrency_level, size_t num_simulations,
 
 void do_benchmarks() {
     auto task = []() {
-        auto seihr_system = seihr(10'000);
+        auto seihr_system = seihr(10000);
 
         auto s_seihr = Simulator(seihr_system, 100);
         auto emptyLambda = [](const auto&, const auto&){};
@@ -113,7 +113,7 @@ void do_benchmarks() {
         s_seihr.simulate(emptyLambda);
     };
 
-    Benchmark benchmark({10, 100, 1000, 10'000}, {1, 6, 12, 18}, task);
+    Benchmark benchmark({10, 100, 1000, 10000}, {1, 6, 12, 18}, task);
     benchmark.Run();
 
     {

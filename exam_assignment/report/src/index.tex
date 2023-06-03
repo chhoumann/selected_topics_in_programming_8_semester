@@ -1,1 +1,206 @@
-Hello, world.
+This report details my implementation of the stochastic simulation library using the Doob-Gillespie algorithm.
+Both the report and library were implemented for the Selected Topics in Programming course at Aalborg University, 2023.
+
+Along with this report is attached an archive containing the library files, including \texttt{CMakeLists.txt} files, so that it can be compiled.
+These files can also be found on this \href{https://github.com/chhoumann/selected_topics_in_programming_8_semester/tree/master/exam_assignment}{GitHub repository}\footnote{\url{https://github.com/chhoumann/selected_topics_in_programming_8_semester/tree/master/exam_assignment}}.
+
+\section{Project setup}
+The project uses a few packages to implement the stochastic simulation library.
+For testing, \texttt{googletest} is used. This is fetched automatically via \texttt{test/CMakeLists.txt}.
+
+Graphviz is used for creating reaction network graphs. It is, on the other hand, not fetched automatically.
+Since I am using Ubuntu via WSL2, I installed Graphviz for development via \texttt{sudo apt install libgraphviz-dev}.
+
+The project also heavily relies on the course-provided plotting library, which uses qt5charts.
+This can be installed via \texttt{sudo apt install libqt5charts5-dev}. The plotting library has been modified to accomodate new uses.
+
+The \texttt{CMakeLists.txt} files show how the project is compiled.
+To do the compilation, run \texttt{cmake .. -DCMAKE_BUILD_TYPE=Debug} or \texttt{cmake .. -DCMAKE_BUILD_TYPE=Release} from within a build directory, and then run \texttt{make}.
+
+\subsection{Project structure}
+\dirtree{%
+.1 /.
+.2 CMakeLists.txt.
+.2 src.
+.3 CMakeLists.txt.
+.3 examples.
+.4 circadian\_oscillator.cpp.
+.4 examples.h.
+.4 seihr.cpp.
+.4 simple.cpp.
+.3 exercises.
+.4 benchmark.cpp.
+.4 benchmark.h.
+.4 make\_graphs.cpp.
+.4 make\_graphs.h.
+.4 peak\_avg\_seihr.cpp.
+.4 peak\_avg\_seihr.h.
+.3 graph\_generator.cpp.
+.3 graph\_generator.h.
+.3 main.cpp.
+.3 monitor.
+.4 monitor.h.
+.4 species\_peak\_monitor.cpp.
+.4 species\_peak\_monitor.h.
+.4 species\_trajectory\_monitor.cpp.
+.4 species\_trajectory\_monitor.h.
+.3 parallel\_simulator.h.
+.3 plot.
+.4 plot.cpp.
+.4 plot.hpp.
+.3 reaction\_rule\_printer.cpp.
+.3 stochastic\_simulator.cpp.
+.3 stochastic\_simulator.h.
+.3 symbol\_table.cpp.
+.3 thread\_pool.h.
+.3 types.cpp.
+.3 types.h.
+.2 tests.
+.3 CMakeLists.txt.
+.3 main.cpp.
+}
+
+\section{Demonstration}
+\subsection{Pretty-printing in human-readable format}
+\begin{verbatim}
+S + I → E + I (rate: 7.74194e-06)
+E → I (rate: 0.196078)
+I → R (rate: 0.322581)
+I → H (rate: 0.000290061)
+H → R (rate: 0.0988142)
+\end{verbatim}
+\begin{verbatim}
+A + DA → D_A (rate: 1)
+D_A → DA + A (rate: 50)
+A + DR → D_R (rate: 1)
+D_R → DR + A (rate: 100)
+D_A → MA + D_A (rate: 500)
+DA → MA + DA (rate: 50)
+D_R → MR + D_R (rate: 50)
+DR → MR + DR (rate: 0.01)
+MA → MA + A (rate: 50)
+MR → MR + R (rate: 5)
+A + R → C (rate: 2)
+C → R (rate: 1)
+A → environment (rate: 1)
+R → environment (rate: 0.2)
+MA → environment (rate: 10)
+MR → environment (rate: 0.5)
+\end{verbatim}
+\begin{verbatim}
+A + C → B + C (rate: 0.001)
+\end{verbatim}
+
+
+\section{Source code}
+% Main CMakeLists.txt file
+\subsection{CMakeLists.txt}
+\lstinputlisting[style=colorC++,caption={CMakeLists.txt}]{../../CMakeLists.txt}
+
+% src directory
+\newpage
+\subsection{src}
+\subsubsection{src/CMakeLists.txt}
+\lstinputlisting[style=colorC++,caption={src/CMakeLists.txt}]{../../src/CMakeLists.txt}
+\newpage
+\subsubsection{src/main.cpp}
+\lstinputlisting[style=colorC++,caption={src/main.cpp}]{../../src/main.cpp}
+\newpage
+\subsubsection{src/graph\_generator.cpp}
+\lstinputlisting[style=colorC++,caption={src/graph\_generator.cpp}]{../../src/graph\_generator.cpp}
+\newpage
+\subsubsection{src/graph\_generator.h}
+\lstinputlisting[style=colorC++,caption={src/graph\_generator.h}]{../../src/graph\_generator.h}
+\newpage
+\subsubsection{src/parallel\_simulator.h}
+\lstinputlisting[style=colorC++,caption={src/parallel\_simulator.h}]{../../src/parallel\_simulator.h}
+\newpage
+\subsubsection{src/stochastic\_simulator.cpp}
+\lstinputlisting[style=colorC++,caption={src/stochastic\_simulator.cpp}]{../../src/stochastic\_simulator.cpp}
+\newpage
+\subsubsection{src/stochastic\_simulator.h}
+\lstinputlisting[style=colorC++,caption={src/stochastic\_simulator.h}]{../../src/stochastic\_simulator.h}
+\newpage
+\subsubsection{src/symbol\_table.cpp}
+\lstinputlisting[style=colorC++,caption={src/symbol\_table.cpp}]{../../src/symbol\_table.cpp}
+\newpage
+\subsubsection{src/thread\_pool.h}
+\lstinputlisting[style=colorC++,caption={src/thread\_pool.h}]{../../src/thread\_pool.h}
+\newpage
+\subsubsection{src/types.cpp}
+\lstinputlisting[style=colorC++,caption={src/types.cpp}]{../../src/types.cpp}
+\newpage
+\subsubsection{src/types.h}
+\lstinputlisting[style=colorC++,caption={src/types.h}]{../../src/types.h}
+
+% src/examples directory
+\newpage
+\subsection{src/examples}
+\subsubsection{src/examples/circadian\_oscillator.cpp}
+\lstinputlisting[style=colorC++,caption={src/examples/circadian\_oscillator.cpp}]{../../src/examples/circadian\_oscillator.cpp}
+\newpage
+\subsubsection{src/examples/examples.h}
+\lstinputlisting[style=colorC++,caption={src/examples/examples.h}]{../../src/examples/examples.h}
+\newpage
+\subsubsection{src/examples/seihr.cpp}
+\lstinputlisting[style=colorC++,caption={src/examples/seihr.cpp}]{../../src/examples/seihr.cpp}
+\newpage
+\subsubsection{src/examples/simple.cpp}
+\lstinputlisting[style=colorC++,caption={src/examples/simple.cpp}]{../../src/examples/simple.cpp}
+
+% src/exercises directory
+\newpage
+\subsection{src/exercises}
+\subsubsection{src/exercises/benchmark.cpp}
+\lstinputlisting[style=colorC++,caption={src/exercises/benchmark.cpp}]{../../src/exercises/benchmark.cpp}
+\newpage
+\subsubsection{src/exercises/benchmark.h}
+\lstinputlisting[style=colorC++,caption={src/exercises/benchmark.h}]{../../src/exercises/benchmark.h}
+\newpage
+\subsubsection{src/exercises/make\_graphs.cpp}
+\lstinputlisting[style=colorC++,caption={src/exercises/make\_graphs.cpp}]{../../src/exercises/make\_graphs.cpp}
+\newpage
+\subsubsection{src/exercises/make\_graphs.h}
+\lstinputlisting[style=colorC++,caption={src/exercises/make\_graphs.h}]{../../src/exercises/make\_graphs.h}
+\newpage
+\subsubsection{src/exercises/peak\_avg\_seihr.cpp}
+\lstinputlisting[style=colorC++,caption={src/exercises/peak\_avg\_seihr.cpp}]{../../src/exercises/peak\_avg\_seihr.cpp}
+\newpage
+\subsubsection{src/exercises/peak\_avg\_seihr.h}
+\lstinputlisting[style=colorC++,caption={src/exercises/peak\_avg\_seihr.h}]{../../src/exercises/peak\_avg\_seihr.h}
+
+% src/monitor directory
+\newpage
+\subsection{src/monitor}
+\subsubsection{src/monitor/monitor.cpp}
+\lstinputlisting[style=colorC++,caption={src/monitor/monitor.h}]{../../src/monitor/monitor.h}
+\newpage
+\subsubsection{src/monitor/species\_peak\_monitor.cpp}
+\lstinputlisting[style=colorC++,caption={src/monitor/species\_peak\_monitor.cpp}]{../../src/monitor/species\_peak\_monitor.cpp}
+\newpage
+\subsubsection{src/monitor/species\_peak\_monitor.h}
+\lstinputlisting[style=colorC++,caption={src/monitor/species\_peak\_monitor.h}]{../../src/monitor/species\_peak\_monitor.h}
+\newpage
+\subsubsection{src/monitor/species\_trajectory\_monitor.cpp}
+\lstinputlisting[style=colorC++,caption={src/monitor/species\_trajectory\_monitor.cpp}]{../../src/monitor/species\_trajectory\_monitor.cpp}
+\newpage
+\subsubsection{src/monitor/species\_trajectory\_monitor.h}
+\lstinputlisting[style=colorC++,caption={src/monitor/species\_trajectory\_monitor.h}]{../../src/monitor/species\_trajectory\_monitor.h}
+
+% src/plot directory
+\newpage
+\subsection{src/plot}
+\subsubsection{src/plot/plot.cpp}
+\lstinputlisting[style=colorC++,caption={src/plot/plot.cpp}]{../../src/plot/plot.cpp}
+\newpage
+\subsubsection{src/plot/plot.hpp}
+\lstinputlisting[style=colorC++,caption={src/plot/plot.hpp}]{../../src/plot/plot.hpp}
+
+% tests directory
+\newpage
+\subsection{tests}
+\subsubsection{tests/CMakeLists.txt}
+\lstinputlisting[style=colorC++,caption={tests/CMakeLists.txt}]{../../tests/CMakeLists.txt}
+\newpage
+\subsubsection{tests/main.cpp}
+\lstinputlisting[style=colorC++,caption={tests/main.cpp}]{../../tests/main.cpp}

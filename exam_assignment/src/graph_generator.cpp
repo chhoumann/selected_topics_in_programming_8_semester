@@ -15,7 +15,7 @@ std::string formatDelay(double delay)
             decimalPart *= 10;
             precision++;
         }
-        
+
         std::stringstream stream;
         stream << std::setprecision(precision) << std::fixed << delay;
         return stream.str();

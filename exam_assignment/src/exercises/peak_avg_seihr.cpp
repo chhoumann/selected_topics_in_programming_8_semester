@@ -41,8 +41,8 @@ double calculate_peak(const std::vector<double>& xs) {
 // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
 void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level) {
     auto begin = std::chrono::steady_clock::now();
-    const size_t N_NJ = 589'755;
-    const size_t N_DK = 5'882'763;
+    const size_t N_NJ = 589755;
+    const size_t N_DK = 5882763;
 
     std::cout << "Simulating SEIHR..." << std::endl;
 

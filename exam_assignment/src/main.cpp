@@ -55,7 +55,7 @@ void plot_circadian() {
 }
 
 void plot_seihr() {
-    auto seihr_system = seihr(10'000);
+    auto seihr_system = seihr(10000);
     auto trajectoryMonitor = SpeciesTrajectoryMonitor();
     auto ips_seihr_species_monitor = make_ips_counter(trajectoryMonitor);
 
@@ -63,7 +63,7 @@ void plot_seihr() {
     auto s_seihr = Simulator(seihr_system, 100);
     s_seihr.simulate(ips_seihr_species_monitor);
 
-    auto plot = plot_t("Trajectory of SEIHR (N=10'000)", "Time, days", "Count", 1920, 1080);
+    auto plot = plot_t("Trajectory of SEIHR (N=10000)", "Time, days", "Count", 1920, 1080);
     for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
         std::string speciesName = species.getName();
 
@@ -88,7 +88,7 @@ void plot_simple() {
     auto ips_species_monitor = make_ips_counter(trajectoryMonitor);
 
     std::cout << "Simulating Simple..." << std::endl;
-    auto s_simple = Simulator(simple_system, 100'000);
+    auto s_simple = Simulator(simple_system, 100000);
     s_simple.simulate(ips_species_monitor);
 
     auto plot_simple = plot_t("Trajectory of Simple (A=100, B=0, C=2)", "Time", "Count", 1920, 1080);
@@ -105,7 +105,7 @@ void plot_simple() {
 int main(int argc, char const *argv[])
 {
     // Solves requirement 2a: Pretty-print the reaction network in human readable format
-    auto seihr_sys = seihr(100'000);
+    auto seihr_sys = seihr(100000);
     auto const& seihr_reactions = seihr_sys.getReactions();
 
     std::cout << "SEIHR reactions:\n";
