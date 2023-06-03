@@ -12,6 +12,7 @@
 #include "examples/examples.h"
 #include "monitor/species_trajectory_monitor.h"
 
+// Utility function to count iterations per second by wrapping Monitors. For my own purposes.
 template <typename Func>
 auto make_ips_counter(Func& func) {
     return [&func](auto&&... args) {
@@ -30,6 +31,7 @@ auto make_ips_counter(Func& func) {
     };
 }
 
+//
 void plot_circadian() {
     auto circadian_system = circadian_oscillator();
     auto trajectoryMonitor = SpeciesTrajectoryMonitor();
@@ -103,12 +105,45 @@ void plot_simple() {
 
 int main(int argc, char const *argv[])
 {
-    do_benchmarks();
+    // Solves requirement 2a: Pretty-print the reaction network in human readable format
+    auto seihr_sys = seihr(100'000);
+    auto const& seihr_reactions = seihr_sys.getReactions();
+
+    std::cout << "SEIHR reactions:\n";
+    for (const auto& reaction : seihr_reactions) {
+        std::cout << reaction << '\n';
+    }
+
+    auto circadian_sys = circadian_oscillator();
+    auto const& circadian_reactions = circadian_sys.getReactions();
+
+    std::cout << "Circadian reactions:\n";
+    for (const auto& reaction : circadian_reactions) {
+        std::cout << reaction << '\n';
+    }
+
+    auto simple_sys = simple();
+    auto const& simple_reactions = simple_sys.getReactions();
+
+    std::cout << "Simple reactions:\n";
+    for (const auto& reaction : simple_reactions) {
+        std::cout << reaction << '\n';
+    }
+
+    // Solves requirement 2b: Pretty-print the reaction network in a network graph
     make_graphs();
+
+    // Solves requirement 5: Demonstrate the application of the library on the three examples (shown in Fig. 1, 2, 3).
+    // Solves requirement 6: Display simulation trajectories of how the amounts change. External tools/libraries can be used to visualize.
     plot_simple();
     plot_circadian();
     plot_seihr();
+
+    // Solution to second part of requirement 7: Use it to estimate
+    // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
     calculate_peak_and_avg_seihr(100, 12);
+
+    do_benchmarks();
 
     return 0;
 }

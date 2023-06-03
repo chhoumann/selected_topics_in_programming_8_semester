@@ -47,6 +47,7 @@ Reaction operator>>=(std::vector<Species> &&reactants, std::vector<Species> &&pr
     return Reaction(std::move(reactants), std::move(products));
 }
 
+// Solves requirement 1: Use operator overloading to support the reaction rule typesetting directly in C++ code.
 std::ostream& operator<<(std::ostream& os, const Reaction& reaction) {
     os << reaction.reactants[0].getName();
     for (int i = 1; i < reaction.reactants.size(); i++) {

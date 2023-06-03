@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include <stdexcept>
 
+// Solves requirement 3:
+// Implement a generic symbol table to store and lookup objects of user-defined types (e.g. information about
+// agents and reactions). Support failure cases when the table does not contain a looked up value.
 template <typename T>
 class SymbolTable {
 private:

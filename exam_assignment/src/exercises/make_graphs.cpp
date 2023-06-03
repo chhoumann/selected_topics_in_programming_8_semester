@@ -1,5 +1,6 @@
 #include "make_graphs.h"
 
+// Solves requirement 2b: Pretty-print the reaction network in a network graph.
 void make_graphs() {
     auto seihr_system = seihr(100'000);
     auto const& reactions_seihr = seihr_system.getReactions();

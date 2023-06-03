@@ -1,5 +1,7 @@
 #include "stochastic_simulator.h"
 
+// Solves requirement 4: Implement the stochastic simulation (Alg. 1) of the system using the reaction rules.
+
 double Simulator::compute_delay(const Reaction &r) {
     double lambda_k = r.rate();
 

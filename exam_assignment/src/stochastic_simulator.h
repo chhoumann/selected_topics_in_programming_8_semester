@@ -19,6 +19,7 @@ public:
     {
     }
 
+    // Part-solution to requirement 7: Implement a generic support for the state monitor in the stochastic simulation algorithm.
     template<typename Monitor>
     void simulate(Monitor monitor) {
         double t = 0;

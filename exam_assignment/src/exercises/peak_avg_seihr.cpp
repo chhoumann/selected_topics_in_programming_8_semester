@@ -35,6 +35,8 @@ double calculate_peak(const std::vector<double>& xs) {
     return *std::max_element(xs.begin(), xs.end());
 }
 
+// Solution to second part of requirement 7: Use it to estimate
+// the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
 void calculate_peak_and_avg_seihr(size_t num_simulations, size_t concurrency_level) {
     auto begin = std::chrono::steady_clock::now();
     const size_t N_NJ = 589'755;
