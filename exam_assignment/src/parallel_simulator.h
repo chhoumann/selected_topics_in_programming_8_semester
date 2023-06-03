@@ -1,6 +1,9 @@
 #ifndef PARALLEL_SIMULATOR_H
 #define PARALLEL_SIMULATOR_H
 
+// Part-solution to requirement 8: Implement support for multiple computer cores by parallelizing the computation of
+// several simulations at the same time.
+
 #include <vector>
 #include <functional>
 #include <memory>
