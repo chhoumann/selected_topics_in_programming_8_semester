@@ -110,7 +110,6 @@ void do_benchmarks() {
         auto s_seihr = Simulator(seihr_system, 100);
         auto emptyLambda = [](const auto&, const auto&){};
 
-        auto begin = std::chrono::steady_clock::now();
         s_seihr.simulate(emptyLambda);
     };
 
