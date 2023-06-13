@@ -13,12 +13,23 @@
 #include "monitor/species_trajectory_monitor.h"
 
 // Utility function to count iterations per second by wrapping Monitors. For my own purposes.
+// Declares function template. So now `make_ips_counter` can accept input of any type as long as it matches expectations later in the code
 template <typename Func>
+// declare function taking 1 arg, which is a reference to a function or callable object `func`. `auto` is the return type, which is deduced by the compiler
 auto make_ips_counter(Func& func) {
+    // return a lambda function that takes any number of arguments, and forwards them to `func` (which is captured by reference).
+    // Arguments are perfectly forwarded to `func` by using `std::forward`, so you can use `make_ips_counter` with any fn or callable object regardless of what arguments it requires
+    // Perfect forwarding is used in template functions to pass their input arguments to another fn, preserving each argument's original type & whether it's an lvalue or rvaule.
+    // We're using `auto&&... args` to create a parameter pack that can bind to any number of arguments of any type, whether they're lvalues or rvalues. And later, with `std::forward<decltype(args)>(args)...`, we can perfectly forward them to `func`.
     return [&func](auto&&... args) {
         static auto lastSecond = std::chrono::steady_clock::now();
         static int iterations = 0;
 
+        // call `func` with the arguments passed to the lambda function. `std::forward` is used to perfectly forward the arguments to `func`, meaning it preserves their lvalue/rvalue-ness and const-ness.
+        // Without it, an rvalue passed to the forwarding fn would be treated as an lvalue inside the function body, which is not what we want.
+        // `decltype` is used to deduce the type of `args` (which is a parameter pack), and forward it to `func` as a parameter pack.
+        // Here, it allows `std::forward` to cast `args` back to the value category (lvalue or rvalue) they had when they were passed to the lambda.
+        // Basically: this allows the lambda to call `func` with the exact same arguments (in type & value category) that were passed to the lambda, as if `func` was being called directly.
         func(std::forward<decltype(args)>(args)...);
         iterations++;
 
@@ -69,7 +80,12 @@ void plot_seihr() {
         // Multiply H by 1000 to make it more visible in the graph
         if (speciesName == "H") {
             std::vector<double> transformedQuantities;
-            std::transform(quantities.begin(), quantities.end(), std::back_inserter(transformedQuantities), [](double quantity) { return quantity * 1000; });
+            std::transform( // similar to `map`, takes 2 iterators specifying range, 1 output iterator where elements are stored, and a function to apply to each element
+                    quantities.begin(), // begin range
+                    quantities.end(), // end range
+                    std::back_inserter(transformedQuantities), // output iterator, this basically just does `push_back` on the vector
+                    [](double quantity) { return quantity * 1000; } // function to apply to each element
+                );
 
             plot.lines(speciesName + "*1000", *trajectoryMonitor.timePoints, transformedQuantities);
         } else {
@@ -91,7 +107,7 @@ void plot_simple() {
     s_simple.simulate(ips_species_monitor);
 
     auto plot_simple = plot_t("Trajectory of Simple (A=100, B=0, C=2)", "Time", "Count", 1920, 1080);
-    for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) {
+    for (const auto& [species, quantities] : *trajectoryMonitor.speciesQuantities) { // this is a map, so `species` is the key and `quantities` is the value, which is a vector of doubles
         std::string speciesName = species.getName();
 
         plot_simple.lines(speciesName, *trajectoryMonitor.timePoints, quantities);
