@@ -12,3 +12,5 @@ CMakeCache.txt
 CMakeFiles/
 lecture7/templates/git_backup
 exam_assignment/cmake-build-release
+exam_assignment/*.zip
+exam_assignment/*.pdf
