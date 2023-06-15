@@ -28,16 +28,23 @@ std::string formatDelay(double delay)
 
 void generate_graph(const std::vector<Reaction> &reactions, const std::string &filename)
 {
-    auto gvc = std::unique_ptr<GVC_t, decltype(&gvFreeContext)>(gvContext(), gvFreeContext);
+    auto gvc = std::unique_ptr<GVC_t, decltype(&gvFreeContext)>(gvContext(), &gvFreeContext);
     auto g = std::unique_ptr<Agraph_t, decltype(&agclose)>(agopen(const_cast<char *>("Reactions"), Agdirected, nullptr), agclose);
 
-    int delayCount = 0;
+    int delayCount = 0; // for unique labels
     for (const auto &reaction : reactions)
     {
         std::stringstream ss;
         ss << "delay_" << delayCount++;
         auto delay_name = ss.str();
         auto n_delay = agnode(g.get(), const_cast<char *>(delay_name.c_str()), TRUE);
+
+        std::string delay_string = formatDelay(reaction.rate());
+        agsafeset(n_delay, const_cast<char *>("label"), const_cast<char *>(delay_string.c_str()), const_cast<char *>(""));
+
+        agsafeset(n_delay, const_cast<char *>("shape"), const_cast<char *>("oval"), const_cast<char *>(""));
+        agsafeset(n_delay, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
+        agsafeset(n_delay, const_cast<char *>("fillcolor"), const_cast<char *>("yellow"), const_cast<char *>(""));
 
         for (const auto &reactant : reaction.reactants)
         {
@@ -47,13 +54,6 @@ void generate_graph(const std::vector<Reaction> &reactions, const std::string &f
             agsafeset(n, const_cast<char *>("shape"), const_cast<char *>("box"), const_cast<char *>(""));
             agsafeset(n, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
             agsafeset(n, const_cast<char *>("fillcolor"), const_cast<char *>("cyan"), const_cast<char *>(""));
-
-            std::string delay_string = formatDelay(reaction.rate());
-            agsafeset(n_delay, const_cast<char *>("label"), const_cast<char *>(delay_string.c_str()), const_cast<char *>(""));
-
-            agsafeset(n_delay, const_cast<char *>("shape"), const_cast<char *>("oval"), const_cast<char *>(""));
-            agsafeset(n_delay, const_cast<char *>("style"), const_cast<char *>("filled"), const_cast<char *>(""));
-            agsafeset(n_delay, const_cast<char *>("fillcolor"), const_cast<char *>("yellow"), const_cast<char *>(""));
 
             agedge(g.get(), n, n_delay, nullptr, TRUE);
         }

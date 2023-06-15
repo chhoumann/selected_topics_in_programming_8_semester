@@ -119,55 +119,55 @@ void plot_simple() {
 
 int main(int argc, char const *argv[])
 {
-    //// Solves requirement 2a: Pretty-print the reaction network in human readable format
-    //auto seihr_sys = seihr(100000);
-    //auto const& seihr_reactions = seihr_sys.getReactions();
+    // Solves requirement 2a: Pretty-print the reaction network in human readable format
+    auto seihr_sys = seihr(100000);
+    auto const& seihr_reactions = seihr_sys.getReactions();
 
-    //std::cout << "SEIHR reactions:\n";
-    //for (const auto& reaction : seihr_reactions) {
-    //    std::cout << reaction << '\n';
-    //}
+    std::cout << "SEIHR reactions:\n";
+    for (const auto& reaction : seihr_reactions) {
+        std::cout << reaction << '\n';
+    }
 
-    //auto circadian_sys = circadian_oscillator();
-    //auto const& circadian_reactions = circadian_sys.getReactions();
+    auto circadian_sys = circadian_oscillator();
+    auto const& circadian_reactions = circadian_sys.getReactions();
 
-    //std::cout << "Circadian reactions:\n";
-    //for (const auto& reaction : circadian_reactions) {
-    //    std::cout << reaction << '\n';
-    //}
+    std::cout << "Circadian reactions:\n";
+    for (const auto& reaction : circadian_reactions) {
+        std::cout << reaction << '\n';
+    }
 
-    //auto simple_sys = simple();
-    //auto const& simple_reactions = simple_sys.getReactions();
+    auto simple_sys = simple();
+    auto const& simple_reactions = simple_sys.getReactions();
 
-    //std::cout << "Simple reactions:\n";
-    //for (const auto& reaction : simple_reactions) {
-    //    std::cout << reaction << '\n';
-    //}
+    std::cout << "Simple reactions:\n";
+    for (const auto& reaction : simple_reactions) {
+        std::cout << reaction << '\n';
+    }
 
-    //// Solves requirement 2b: Pretty-print the reaction network in a network graph
-    //make_graphs();
+    // Solves requirement 2b: Pretty-print the reaction network in a network graph
+    make_graphs();
 
-    //// Solves requirement 5: Demonstrate the application of the library on the three examples (shown in Fig. 1, 2, 3).
-    //// Solves requirement 6: Display simulation trajectories of how the amounts change. External tools/libraries can be used to //visualize.
-    //plot_simple();
-    //plot_circadian();
-    //plot_seihr();
+    // Solves requirement 5: Demonstrate the application of the library on the three examples (shown in Fig. 1, 2, 3).
+    // Solves requirement 6: Display simulation trajectories of how the amounts change. External tools/libraries can be used to //visualize.
+    plot_simple();
+    plot_circadian();
+    plot_seihr();
 
-    //// Solution to second part of requirement 7: Use it to estimate
-    //// the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
-    //// Solution to the second part of requirement 8: Estimate the likely (mean) value of the hospitalized peak over 20 simulations.
-    //// Except I did it over 100 simulations.
-    //const size_t N_NJ = 589755;
-    //const size_t N_DK = 5882763;
+    // Solution to second part of requirement 7: Use it to estimate
+    // the peak of hospitalized agents in Covid-19 example without storing trajectory data for NNJ and NDK.
+    // Solution to the second part of requirement 8: Estimate the likely (mean) value of the hospitalized peak over 20 simulations.
+    // Except I did it over 100 simulations.
+    const size_t N_NJ = 589755;
+    const size_t N_DK = 5882763;
 
-    //std::cout << "SEIHR peak and avg hospitalized agents for North Jutland population size" << std::endl;
-    //calculate_peak_and_avg_seihr(100, 12, N_NJ);
+    std::cout << "SEIHR peak and avg hospitalized agents for North Jutland population size" << std::endl;
+    calculate_peak_and_avg_seihr(100, 12, N_NJ);
 
-    //std::cout << "SEIHR peak and avg hospitalized agents for Denmark population size" << std::endl;
-    //calculate_peak_and_avg_seihr(100, 12, N_DK);
+    std::cout << "SEIHR peak and avg hospitalized agents for Denmark population size" << std::endl;
+    calculate_peak_and_avg_seihr(100, 12, N_DK);
 
-    // Solves requirement 10: Benchmark and compare the stochastic simulation performance (e.g. the time it takes to compute 20 simulations
-    // a single core, multiple cores, or improved implementation). Make your conclusions.
+     Solves requirement 10: Benchmark and compare the stochastic simulation performance (e.g. the time it takes to compute 20 simulations
+     a single core, multiple cores, or improved implementation). Make your conclusions.
     do_benchmarks();
 
     return 0;
