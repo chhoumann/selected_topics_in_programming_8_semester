@@ -10,8 +10,9 @@ double Simulator::compute_delay(const Reaction &r) {
         lambda_k *= system_.amount(reactant);
     }
 
-    std::exponential_distribution<double> distribution(lambda_k);
-    return distribution(generator_);
+    // These two lines generate a random number from an exponential distribution
+    std::exponential_distribution<double> distribution(lambda_k); // Models the exponential distribution
+    return distribution(generator_); // Returns a random number from the distribution, using the generator - which generates uniformly distributed, pseudo-random numbers
 }
 
 std::shared_ptr<Reaction> Simulator::find_min_delay_reaction(const std::vector<Reaction> &reactions) {

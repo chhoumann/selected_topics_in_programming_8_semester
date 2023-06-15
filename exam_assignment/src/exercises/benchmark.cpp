@@ -9,6 +9,7 @@ void BenchmarkPlotter::addLine(const LevelSimulationsMap& data) {
         std::vector<double> y(results.size());
         size_t i = 0;
         for (const auto& [num_simulation, avg_time] : results) {
+            // num_simulation is a const unsigned long (size_t), but we need a double
             x[i] = static_cast<double>(num_simulation);
             y[i] = avg_time;
             ++i;
@@ -90,7 +91,7 @@ void Benchmark::performSimulationsAndStoreResults(size_t concurrency_level, size
     addResultToMap(concurrency_level, num_simulation, average, average_runtimes);
     std::cout << "Average time" << " for " << num_simulation << " w. CL " << concurrency_level << " = " << average << "ms" << std::endl;
 
-    auto total = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_total).count() / 1000;
+    auto total = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_total).count() / numRepeats_) / 1000;
     addResultToMap(concurrency_level, num_simulation, total, average_total_runtimes);
     std::cout << "Total time" << " for " << num_simulation << " w. CL " << concurrency_level << " = " << total << "s" << std::endl;
 }

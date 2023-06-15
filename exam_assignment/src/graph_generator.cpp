@@ -1,21 +1,25 @@
 #include "graph_generator.h"
 
+// Format delay as a string to have as few significant digits as possible while still being accurate - up to 10 significant digits
 std::string formatDelay(double delay)
 {
+    // If it's already a whole number, just return it as such
     if (delay == static_cast<int>(delay))
     {
         return std::to_string(static_cast<int>(delay));
     }
-    else
+    else // Otherwise, format it as a decimal by finding number of significant digits in the decimal part of `delay` (up to 10 digits) and format `delay` as a string with that many digits of precision.
     {
         double decimalPart = delay - static_cast<int>(delay);
         int precision = 0;
+        // Calculate number of significant digits by repeatedly multiplying the decimal part by 10 and checking if the new decimal part is different from its integer part. This continues until the decimal part is essentially an integer (i.e. difference between decimal part and integer part is less than 1e-10) or until 10 significant digits have been found.
         while (std::abs(decimalPart - static_cast<int>(decimalPart)) > 1e-10 && precision < 10)
         {
             decimalPart *= 10;
             precision++;
         }
 
+        // Format delay as a string with the calculated precision
         std::stringstream stream;
         stream << std::setprecision(precision) << std::fixed << delay;
         return stream.str();
